@@ -426,6 +426,10 @@ func LoadTableForeignKeys(ctx context.Context, args *Args, tables []xo.Table, ta
 
 // validType returns whether the type name given is valid, given the --include
 // and --exclude options provided by the user.
+// TODO should have a soft exclude that excludes fields for inserts, etc. but can
+// retrieve, e.g. created_at, updated_at is db managed but we want to have them in the struct
+// and returned on queries.
+// i.e. the same logic for generated pks should be applied, need to find where that is.
 func validType(args *Args, skipIncludes bool, names ...string) bool {
 	include, exclude := args.SchemaParams.Include.AsGlob(), args.SchemaParams.Exclude.AsGlob()
 	if len(include) == 0 && len(exclude) == 0 {

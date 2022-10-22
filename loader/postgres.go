@@ -23,6 +23,7 @@ func init() {
 		Tables:           models.PostgresTables,
 		TableColumns:     PostgresTableColumns,
 		TableSequences:   models.PostgresTableSequences,
+		TableGenerations: models.PostgresTableGenerations,
 		TableForeignKeys: models.PostgresTableForeignKeys,
 		TableIndexes:     models.PostgresTableIndexes,
 		IndexColumns:     PostgresIndexColumns,

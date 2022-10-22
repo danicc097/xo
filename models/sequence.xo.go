@@ -13,7 +13,6 @@ type Sequence struct {
 
 // PostgresTableSequences runs a custom query, returning results as Sequence.
 func PostgresTableSequences(ctx context.Context, db DB, schema, table string) ([]*Sequence, error) {
-	// query
 	const sqlstr = `SELECT ` +
 		`a.attname ` + // ::varchar as column_name
 		`FROM pg_class s ` +
