@@ -6,11 +6,8 @@ package models
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
-	"encoding/csv"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 )
 
@@ -34,10 +31,9 @@ func Logf(s string, v ...interface{}) {
 
 // SetLogger sets the package logger. Valid logger types:
 //
-//     io.Writer
-//     func(string, ...interface{}) (int, error) // fmt.Printf
-//     func(string, ...interface{}) // log.Printf
-//
+//	io.Writer
+//	func(string, ...interface{}) (int, error) // fmt.Printf
+//	func(string, ...interface{}) // log.Printf
 func SetLogger(logger interface{}) {
 	logf = convLogger(logger)
 }
@@ -49,10 +45,9 @@ func Errorf(s string, v ...interface{}) {
 
 // SetErrorLogger sets the package error logger. Valid logger types:
 //
-//     io.Writer
-//     func(string, ...interface{}) (int, error) // fmt.Printf
-//     func(string, ...interface{}) // log.Printf
-//
+//	io.Writer
+//	func(string, ...interface{}) (int, error) // fmt.Printf
+//	func(string, ...interface{}) // log.Printf
 func SetErrorLogger(logger interface{}) {
 	errf = convLogger(logger)
 }
@@ -147,62 +142,6 @@ func (err *ErrUpsertFailed) Unwrap() error {
 	return err.Err
 }
 
-// ErrDecodeFailed is the decode failed error.
-type ErrDecodeFailed struct {
-	Err error
-}
-
-// Error satisfies the error interface.
-func (err *ErrDecodeFailed) Error() string {
-	return fmt.Sprintf("unable to decode: %v", err.Err)
-}
-
-// Unwrap satisfies the unwrap interface.
-func (err *ErrDecodeFailed) Unwrap() error {
-	return err.Err
-}
-
-// ErrInvalidStringSlice is the invalid StringSlice error.
-const ErrInvalidStringSlice Error = "invalid StringSlice"
-
-// StringSlice is a slice of strings.
-type StringSlice []string
-
-// Scan satisfies the sql.Scanner interface for StringSlice.
-func (ss *StringSlice) Scan(v interface{}) error {
-	buf, ok := v.([]byte)
-	if !ok {
-		return logerror(ErrInvalidStringSlice)
-	}
-	// change quote escapes for csv parser
-	str := strings.Replace(quoteEscRE.ReplaceAllString(string(buf), `$1""`), `\\`, `\`, -1)
-	str = str[1 : len(str)-1]
-	// bail if only one
-	if len(str) == 0 {
-		return nil
-	}
-	// parse with csv reader
-	r := csv.NewReader(strings.NewReader(str))
-	line, err := r.Read()
-	if err != nil {
-		return logerror(&ErrDecodeFailed{err})
-	}
-	*ss = StringSlice(line)
-	return nil
-}
-
-// quoteEscRE matches escaped characters in a string.
-var quoteEscRE = regexp.MustCompile(`([^\\]([\\]{2})*)\\"`)
-
-// Value satisfies the sql/driver.Valuer interface.
-func (ss StringSlice) Value() (driver.Value, error) {
-	v := make([]string, len(ss))
-	for i, s := range ss {
-		v[i] = `"` + strings.Replace(strings.Replace(s, `\`, `\\\`, -1), `"`, `\"`, -1) + `"`
-	}
-	return "{" + strings.Join(v, ",") + "}", nil
-}
-
 // PostgresViewCreate creates a view for introspection.
 func PostgresViewCreate(ctx context.Context, db DB, schema, id string, query []string) (sql.Result, error) {
 	// query
@@ -255,40 +194,6 @@ func PostgresSchema(ctx context.Context, db DB) (string, error) {
 	return schemaName, nil
 }
 
-// MysqlViewCreate creates a view for introspection.
-func MysqlViewCreate(ctx context.Context, db DB, schema, id string, query []string) (sql.Result, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`CREATE VIEW ` + id + ` AS ` + strings.Join(query, "\n")
-	// run
-	logf(sqlstr)
-	return db.ExecContext(ctx, sqlstr)
-}
-
-// MysqlViewDrop drops a view created for introspection.
-func MysqlViewDrop(ctx context.Context, db DB, schema, id string) (sql.Result, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`DROP VIEW ` + id
-	// run
-	logf(sqlstr)
-	return db.ExecContext(ctx, sqlstr)
-}
-
-// MysqlSchema retrieves the schema.
-func MysqlSchema(ctx context.Context, db DB) (string, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`SCHEMA() AS schema_name`
-	// run
-	logf(sqlstr)
-	var schemaName string
-	if err := db.QueryRowContext(ctx, sqlstr).Scan(&schemaName); err != nil {
-		return "", logerror(err)
-	}
-	return schemaName, nil
-}
-
 // Sqlite3ViewCreate creates a view for introspection.
 func Sqlite3ViewCreate(ctx context.Context, db DB, schema, id string, query []string) (sql.Result, error) {
 	// query
@@ -315,85 +220,6 @@ func Sqlite3Schema(ctx context.Context, db DB) (string, error) {
 	const sqlstr = `SELECT ` +
 		`REPLACE(file, RTRIM(file, REPLACE(file, '/', '')), '') AS schema_name ` +
 		`FROM pragma_database_list()`
-	// run
-	logf(sqlstr)
-	var schemaName string
-	if err := db.QueryRowContext(ctx, sqlstr).Scan(&schemaName); err != nil {
-		return "", logerror(err)
-	}
-	return schemaName, nil
-}
-
-// SqlserverViewCreate creates a view for introspection.
-func SqlserverViewCreate(ctx context.Context, db DB, schema, id string, query []string) (sql.Result, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`CREATE VIEW ` + id + ` AS ` + strings.Join(query, "\n")
-	// run
-	logf(sqlstr)
-	return db.ExecContext(ctx, sqlstr)
-}
-
-// SqlserverViewDrop drops a view created for introspection.
-func SqlserverViewDrop(ctx context.Context, db DB, schema, id string) (sql.Result, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`DROP VIEW ` + id
-	// run
-	logf(sqlstr)
-	return db.ExecContext(ctx, sqlstr)
-}
-
-// SqlserverSchema retrieves the schema.
-func SqlserverSchema(ctx context.Context, db DB) (string, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`SCHEMA_NAME() AS schema_name`
-	// run
-	logf(sqlstr)
-	var schemaName string
-	if err := db.QueryRowContext(ctx, sqlstr).Scan(&schemaName); err != nil {
-		return "", logerror(err)
-	}
-	return schemaName, nil
-}
-
-// OracleViewCreate creates a view for introspection.
-func OracleViewCreate(ctx context.Context, db DB, schema, id string, query []string) (sql.Result, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`CREATE GLOBAL TEMPORARY TABLE ` + id + ` ON COMMIT PRESERVE ROWS AS ` + strings.Join(query, "\n")
-	// run
-	logf(sqlstr)
-	return db.ExecContext(ctx, sqlstr)
-}
-
-// OracleViewTruncate truncates a view created for introspection.
-func OracleViewTruncate(ctx context.Context, db DB, schema, id string) (sql.Result, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`TRUNCATE TABLE ` + id
-	// run
-	logf(sqlstr)
-	return db.ExecContext(ctx, sqlstr)
-}
-
-// OracleViewDrop drops a view created for introspection.
-func OracleViewDrop(ctx context.Context, db DB, schema, id string) (sql.Result, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`DROP TABLE ` + id
-	// run
-	logf(sqlstr)
-	return db.ExecContext(ctx, sqlstr)
-}
-
-// OracleSchema retrieves the schema.
-func OracleSchema(ctx context.Context, db DB) (string, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`LOWER(SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA')) AS schema_name ` +
-		`FROM dual`
 	// run
 	logf(sqlstr)
 	var schemaName string

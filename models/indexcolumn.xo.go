@@ -53,40 +53,6 @@ func PostgresIndexColumns(ctx context.Context, db DB, schema, index string) ([]*
 	return res, nil
 }
 
-// MysqlIndexColumns runs a custom query, returning results as IndexColumn.
-func MysqlIndexColumns(ctx context.Context, db DB, schema, table, index string) ([]*IndexColumn, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`seq_in_index AS seq_no, ` +
-		`column_name ` +
-		`FROM information_schema.statistics ` +
-		`WHERE index_schema = ? ` +
-		`AND table_name = ? ` +
-		`AND index_name = ? ` +
-		`ORDER BY seq_in_index`
-	// run
-	logf(sqlstr, schema, table, index)
-	rows, err := db.QueryContext(ctx, sqlstr, schema, table, index)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*IndexColumn
-	for rows.Next() {
-		var ic IndexColumn
-		// scan
-		if err := rows.Scan(&ic.SeqNo, &ic.ColumnName); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &ic)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
 // Sqlite3IndexColumns runs a custom query, returning results as IndexColumn.
 func Sqlite3IndexColumns(ctx context.Context, db DB, schema, table, index string) ([]*IndexColumn, error) {
 	// query
@@ -109,81 +75,6 @@ func Sqlite3IndexColumns(ctx context.Context, db DB, schema, table, index string
 		var ic IndexColumn
 		// scan
 		if err := rows.Scan(&ic.SeqNo, &ic.Cid, &ic.ColumnName); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &ic)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
-// SqlserverIndexColumns runs a custom query, returning results as IndexColumn.
-func SqlserverIndexColumns(ctx context.Context, db DB, schema, table, index string) ([]*IndexColumn, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`k.keyno AS seq_no, ` +
-		`k.colid AS cid, ` +
-		`c.name AS column_name ` +
-		`FROM sysindexes i ` +
-		`INNER JOIN sysobjects o ON i.id = o.id ` +
-		`INNER JOIN sysindexkeys k ON k.id = o.id ` +
-		`AND k.indid = i.indid ` +
-		`INNER JOIN syscolumns c ON c.id = o.id ` +
-		`AND c.colid = k.colid ` +
-		`WHERE o.type = 'U' ` +
-		`AND SCHEMA_NAME(o.uid) = @p1 ` +
-		`AND o.name = @p2 ` +
-		`AND i.name = @p3 ` +
-		`ORDER BY k.keyno`
-	// run
-	logf(sqlstr, schema, table, index)
-	rows, err := db.QueryContext(ctx, sqlstr, schema, table, index)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*IndexColumn
-	for rows.Next() {
-		var ic IndexColumn
-		// scan
-		if err := rows.Scan(&ic.SeqNo, &ic.Cid, &ic.ColumnName); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &ic)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
-// OracleIndexColumns runs a custom query, returning results as IndexColumn.
-func OracleIndexColumns(ctx context.Context, db DB, schema, table, index string) ([]*IndexColumn, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`column_position AS seq_no, ` +
-		`LOWER(column_name) AS column_name ` +
-		`FROM all_ind_columns ` +
-		`WHERE index_owner = UPPER(:1) ` +
-		`AND table_name = UPPER(:2) ` +
-		`AND index_name = UPPER(:3) ` +
-		`ORDER BY column_position`
-	// run
-	logf(sqlstr, schema, table, index)
-	rows, err := db.QueryContext(ctx, sqlstr, schema, table, index)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*IndexColumn
-	for rows.Next() {
-		var ic IndexColumn
-		// scan
-		if err := rows.Scan(&ic.SeqNo, &ic.ColumnName); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &ic)

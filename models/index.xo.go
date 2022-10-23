@@ -50,39 +50,6 @@ func PostgresTableIndexes(ctx context.Context, db DB, schema, table string) ([]*
 	return res, nil
 }
 
-// MysqlTableIndexes runs a custom query, returning results as Index.
-func MysqlTableIndexes(ctx context.Context, db DB, schema, table string) ([]*Index, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`DISTINCT index_name, ` +
-		`NOT non_unique AS is_unique ` +
-		`FROM information_schema.statistics ` +
-		`WHERE index_name <> 'PRIMARY' ` +
-		`AND index_schema = ? ` +
-		`AND table_name = ?`
-	// run
-	logf(sqlstr, schema, table)
-	rows, err := db.QueryContext(ctx, sqlstr, schema, table)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*Index
-	for rows.Next() {
-		var i Index
-		// scan
-		if err := rows.Scan(&i.IndexName, &i.IsUnique); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
 // Sqlite3TableIndexes runs a custom query, returning results as Index.
 func Sqlite3TableIndexes(ctx context.Context, db DB, schema, table string) ([]*Index, error) {
 	// query
@@ -105,74 +72,6 @@ func Sqlite3TableIndexes(ctx context.Context, db DB, schema, table string) ([]*I
 		var i Index
 		// scan
 		if err := rows.Scan(&i.IndexName, &i.IsUnique, &i.IsPrimary); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
-// SqlserverTableIndexes runs a custom query, returning results as Index.
-func SqlserverTableIndexes(ctx context.Context, db DB, schema, table string) ([]*Index, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`i.name AS index_name, ` +
-		`i.is_primary_key AS is_primary, ` +
-		`i.is_unique ` +
-		`FROM sys.indexes i ` +
-		`INNER JOIN sysobjects o ON i.object_id = o.id ` +
-		`WHERE i.name IS NOT NULL ` +
-		`AND o.type = 'U' ` +
-		`AND SCHEMA_NAME(o.uid) = @p1 ` +
-		`AND o.name = @p2`
-	// run
-	logf(sqlstr, schema, table)
-	rows, err := db.QueryContext(ctx, sqlstr, schema, table)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*Index
-	for rows.Next() {
-		var i Index
-		// scan
-		if err := rows.Scan(&i.IndexName, &i.IsPrimary, &i.IsUnique); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}
-
-// OracleTableIndexes runs a custom query, returning results as Index.
-func OracleTableIndexes(ctx context.Context, db DB, schema, table string) ([]*Index, error) {
-	// query
-	const sqlstr = `SELECT ` +
-		`LOWER(index_name) AS index_name, ` +
-		`CASE WHEN uniqueness = 'UNIQUE' THEN '1' ELSE '0' END AS is_unique ` +
-		`FROM all_indexes ` +
-		`WHERE owner = UPPER(:1) ` +
-		`AND table_name = UPPER(:2)`
-	// run
-	logf(sqlstr, schema, table)
-	rows, err := db.QueryContext(ctx, sqlstr, schema, table)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*Index
-	for rows.Next() {
-		var i Index
-		// scan
-		if err := rows.Scan(&i.IndexName, &i.IsUnique); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &i)

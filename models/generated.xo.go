@@ -6,27 +6,23 @@ import (
 	"context"
 )
 
-// Generated represents generated.
+// Generated represents generated columns.
 type Generated struct {
 	ColumnName string `json:"column_name"` // column_name
 }
 
-// PostgresTableGenerations returns generated column names.
-func PostgresTableGenerations(ctx context.Context, db DB, schema, table string) ([]*Generated, error) {
+// PostgresTableGenerations runs a custom query, returning results as Generated.
+func PostgresTableGenerations(ctx context.Context, db DB, table, schema string) ([]*Generated, error) {
 	// query
 	const sqlstr = `SELECT ` +
-		`a.attname ` + // ::varchar as column_name
-		`FROM pg_class s ` +
-		`JOIN pg_depend d ON d.objid = s.oid ` +
-		`JOIN pg_class t ON d.objid = s.oid AND d.refobjid = t.oid ` +
-		`JOIN pg_attribute a ON (d.refobjid, d.refobjsubid) = (a.attrelid, a.attnum) ` +
-		`JOIN pg_namespace n ON n.oid = s.relnamespace ` +
-		`WHERE s.relkind = 'S' ` +
-		`AND n.nspname = $1 ` +
-		`AND t.relname = $2`
+		`column_name ` +
+		`FROM information_schema.columns ` +
+		`WHERE table_name = $1 ` +
+		`and table_schema = $2 ` +
+		`and is_generated = 'ALWAYS'`
 	// run
-	logf(sqlstr, schema, table)
-	rows, err := db.QueryContext(ctx, sqlstr, schema, table)
+	logf(sqlstr, table, schema)
+	rows, err := db.QueryContext(ctx, sqlstr, table, schema)
 	if err != nil {
 		return nil, logerror(err)
 	}
@@ -34,12 +30,12 @@ func PostgresTableGenerations(ctx context.Context, db DB, schema, table string) 
 	// load results
 	var res []*Generated
 	for rows.Next() {
-		var s Generated
+		var g Generated
 		// scan
-		if err := rows.Scan(&s.ColumnName); err != nil {
+		if err := rows.Scan(&g.ColumnName); err != nil {
 			return nil, logerror(err)
 		}
-		res = append(res, &s)
+		res = append(res, &g)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, logerror(err)
