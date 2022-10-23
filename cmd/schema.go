@@ -36,16 +36,6 @@ func LoadSchema(ctx context.Context, set *xo.Set, args *Args) error {
 	if schema.Views, err = LoadTables(ctx, args, "view"); err != nil {
 		return err
 	}
-	// fix enums for mysql
-	if driver == "mysql" {
-		for i := 0; i < len(schema.Tables); i++ {
-			for j := 0; j < len(schema.Tables[i].Columns); j++ {
-				if e := schema.EnumByName(schema.Tables[i].Columns[j].Type.Type); e != nil {
-					schema.Tables[i].Columns[j].Type.Enum = e
-				}
-			}
-		}
-	}
 	// emit
 	set.Schemas = append(set.Schemas, schema)
 	return nil

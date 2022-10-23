@@ -53,8 +53,9 @@ func NewArgs(name string, names ...string) *Args {
 		},
 		SchemaParams: SchemaParams{
 			FkMode:  xo.NewValue("string", "smart", "foreign key resolution mode", "smart", "parent", "field", "key"),
-			Include: xo.NewValue("glob", "", "include types"),
-			Exclude: xo.NewValue("glob", "", "exclude types"),
+			Include: xo.NewValue("glob", "", "include columns"),
+			Exclude: xo.NewValue("glob", "", "exclude columns"),
+			Ignore:  xo.NewValue("glob", "", "ignore columns for inserts/updates"),
 		},
 	}
 }
@@ -133,6 +134,9 @@ type SchemaParams struct {
 	// to indexes (for example, 'authors__b124214__u_idx' instead of the more
 	// descriptive 'authors_title_idx').
 	UseIndexNames bool
+	// Ignore excludes a pattern of columns from inserts and updates,
+	// but can be returned by queries (e.g. *.created_at, *.updated_at)
+	Ignore *xo.Value
 }
 
 // OutParams are out parameters.
@@ -274,6 +278,7 @@ func SchemaCommand(ctx context.Context, ts *templates.Set, args *Args) (*cobra.C
 	flags.VarP(args.SchemaParams.FkMode, "fk-mode", "k", args.SchemaParams.FkMode.Desc())
 	flags.VarP(args.SchemaParams.Include, "include", "i", args.SchemaParams.Include.Desc())
 	flags.VarP(args.SchemaParams.Exclude, "exclude", "e", args.SchemaParams.Exclude.Desc())
+	flags.VarP(args.SchemaParams.Ignore, "ignore", "I", args.SchemaParams.Ignore.Desc())
 	flags.BoolVarP(&args.SchemaParams.UseIndexNames, "use-index-names", "j", false, "use index names as defined in schema for generated code")
 	if err := templateFlags(cmd, ts, true, args); err != nil {
 		return nil, err

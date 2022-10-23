@@ -5,10 +5,7 @@ name = "pypi"
 
 [packages]
 django = ">=4"
-cx-oracle = "*"
 psycopg2 = "*"
-mysqlclient = "*"
-mssql-django = "*"
 lock = "*"
 pyodbc = "*"
 

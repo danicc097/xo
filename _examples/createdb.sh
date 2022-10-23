@@ -2,27 +2,24 @@
 
 SRC=$(realpath $(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd))
 
-DATABASES="mysql oracle postgres sqlite3 sqlserver"
+DATABASES="postgres sqlite3"
 NAME=
 PASS=
 DATAFILE=
 
 declare -A INIT
 INIT+=(
-  [mysql]=my://localhost/
-  [oracle]=or://localhost:1521/db1
   [postgres]=pg://localhost/
-  [sqlserver]=ms://localhost/
 )
 
 OPTIND=1
 while getopts "d:f:n:" opt; do
-case "$opt" in
+  case "$opt" in
   d) DATABASES=$OPTARG ;;
   f) DATAFILE=$OPTARG ;;
   n) NAME=$OPTARG ;;
   p) PASS=$OPTARG ;;
-esac
+  esac
 done
 
 if [ -z "$NAME" ]; then
@@ -34,11 +31,12 @@ if [ -z "$PASS" ]; then
   PASS="$NAME"
 fi
 
-pushd $SRC &> /dev/null
+pushd $SRC &>/dev/null
 for TYPE in $DATABASES; do
   if [ "$TYPE" = "sqlite3" ]; then
     if [ -e "$NAME.db" ]; then
-      (set -x;
+      (
+        set -x
         rm "$NAME.db"
       )
     fi
@@ -50,7 +48,8 @@ for TYPE in $DATABASES; do
   elif [[ "$TYPE" != "oracle" ]]; then
     DATAFILE=""
   fi
-  (set -x;
+  (
+    set -x
     usql $DB \
       --set=DB="$DB" \
       --set=NAME="$NAME" \
@@ -63,4 +62,4 @@ for TYPE in $DATABASES; do
       -f $SRC/init/$TYPE.sql
   )
 done
-popd &> /dev/null
+popd &>/dev/null

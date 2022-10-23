@@ -14,18 +14,12 @@ import (
 	"os/user"
 
 	// drivers
-	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
-	_ "github.com/microsoft/go-mssqldb"
-	_ "github.com/sijms/go-ora/v2"
 
 	// models
-	"github.com/xo/xo/_examples/northwind/mysql"
-	"github.com/xo/xo/_examples/northwind/oracle"
 	"github.com/xo/xo/_examples/northwind/postgres"
 	"github.com/xo/xo/_examples/northwind/sqlite3"
-	"github.com/xo/xo/_examples/northwind/sqlserver"
 
 	"github.com/xo/dburl"
 	"github.com/xo/dburl/passfile"
@@ -46,11 +40,8 @@ func run(ctx context.Context, verbose bool, dsn string) error {
 		logger := func(s string, v ...interface{}) {
 			fmt.Printf("-------------------------------------\nQUERY: %s\n  VAL: %v\n\n", s, v)
 		}
-		mysql.SetLogger(logger)
-		oracle.SetLogger(logger)
 		postgres.SetLogger(logger)
 		sqlite3.SetLogger(logger)
-		sqlserver.SetLogger(logger)
 	}
 	v, err := user.Current()
 	if err != nil {
@@ -68,16 +59,10 @@ func run(ctx context.Context, verbose bool, dsn string) error {
 	}
 	var f func(context.Context, *sql.DB) error
 	switch u.Driver {
-	case "mysql":
-		f = runMysql
-	case "oracle":
-		f = runOracle
 	case "postgres":
 		f = runPostgres
 	case "sqlite3":
 		f = runSqlite3
-	case "sqlserver":
-		f = runSqlserver
 	}
 	return f(ctx, db)
 }
@@ -88,11 +73,6 @@ func parse(dsn string) (*dburl.URL, error) {
 		return nil, err
 	}
 	switch v.Driver {
-	case "mysql":
-		q := v.Query()
-		q.Set("parseTime", "true")
-		v.RawQuery = q.Encode()
-		return dburl.Parse(v.String())
 	case "sqlite3":
 		q := v.Query()
 		q.Set("_loc", "auto")

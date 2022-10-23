@@ -753,10 +753,6 @@ func goType(ctx context.Context, typ xo.Type) (string, string, error) {
 	driver, _, schema := xo.DriverDbSchema(ctx)
 	var f func(xo.Type, string, string, string) (string, string, error)
 	switch driver {
-	case "mysql":
-		f = loader.MysqlGoType
-	case "oracle":
-		f = loader.OracleGoType
 	case "postgres":
 		switch mode := ArrayMode(ctx); mode {
 		case "stdlib":
@@ -768,8 +764,6 @@ func goType(ctx context.Context, typ xo.Type) (string, string, error) {
 		}
 	case "sqlite3":
 		f = loader.Sqlite3GoType
-	case "sqlserver":
-		f = loader.SqlserverGoType
 	default:
 		return "", "", fmt.Errorf("unknown driver %q", driver)
 	}
