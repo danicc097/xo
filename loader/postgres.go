@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/xo/xo/models"
-	xo "github.com/xo/xo/types"
+	"github.com/danicc097/xo/models"
+	xo "github.com/danicc097/xo/types"
 )
 
 func init() {

@@ -15,8 +15,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	// models
-	"github.com/xo/xo/_examples/a_bit_of_everything/postgres"
-	"github.com/xo/xo/_examples/a_bit_of_everything/sqlite3"
+	"github.com/danicc097/xo/_examples/a_bit_of_everything/postgres"
+	"github.com/danicc097/xo/_examples/a_bit_of_everything/sqlite3"
 
 	"github.com/xo/dburl"
 	"github.com/xo/dburl/passfile"

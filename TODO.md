@@ -11,7 +11,7 @@ Relevant forks:
 - new --go-postgres-driver flag (pgx|stdlib)
 
 - sqlc will be generated first. xo's package name change to whatever that is
-  with `--go-pkg=<name>` and output to the same folder. if files found in "-o"
+  with `--go-pkg=<name>`(UPDATE: doesn't recognize. use go.go) and output to the same folder. if files found in "-o"
   folder (meaning using sqlc):
 
   - don't output interface or enum files

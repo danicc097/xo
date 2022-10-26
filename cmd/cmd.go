@@ -13,14 +13,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/danicc097/xo/loader"
+	"github.com/danicc097/xo/models"
+	"github.com/danicc097/xo/templates"
+	xo "github.com/danicc097/xo/types"
 	"github.com/kenshaw/snaker"
 	"github.com/spf13/cobra"
 	"github.com/xo/dburl"
 	"github.com/xo/dburl/passfile"
-	"github.com/xo/xo/loader"
-	"github.com/xo/xo/models"
-	"github.com/xo/xo/templates"
-	xo "github.com/xo/xo/types"
 	"github.com/yookoala/realpath"
 )
 

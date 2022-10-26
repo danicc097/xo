@@ -10,9 +10,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/danicc097/xo/models"
+	xo "github.com/danicc097/xo/types"
 	"github.com/kenshaw/snaker"
-	"github.com/xo/xo/models"
-	xo "github.com/xo/xo/types"
 )
 
 // loaders are registered database loaders.

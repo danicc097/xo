@@ -16,9 +16,9 @@ import (
 
 	_ "github.com/lib/pq"
 
+	"github.com/danicc097/xo/_examples/pgcatalog/pgtypes"
 	"github.com/kenshaw/snaker"
 	"github.com/xo/dburl/passfile"
-	"github.com/xo/xo/_examples/pgcatalog/pgtypes"
 	"mvdan.cc/gofumpt/format"
 )
 

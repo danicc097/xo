@@ -10,8 +10,8 @@ import (
 	"strings"
 	"text/template"
 
+	xo "github.com/danicc097/xo/types"
 	"github.com/kenshaw/snaker"
-	xo "github.com/xo/xo/types"
 )
 
 // Init registers the template.

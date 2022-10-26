@@ -1,6 +1,6 @@
 # xo-sqlc
 
-An opinionated fork of [`xo`](https://github.com/xo/xo) compatible with
+An opinionated fork of [`xo`](https://github.com/danicc097/xo) compatible with
 [`sqlc`](https://github.com/kyleconroy/sqlc) output.
 
 Features (WIP):
@@ -54,7 +54,7 @@ The following is a matrix of the feature support for each database:
 Install `xo` in the usual Go way:
 
 ```sh
-$ go install github.com/xo/xo@latest
+$ go install github.com/danicc097/xo@latest
 ```
 
 > **Note:** Go 1.16+ is needed for building `xo` from source.

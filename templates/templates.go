@@ -14,10 +14,10 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/danicc097/xo/internal"
+	xo "github.com/danicc097/xo/types"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
-	"github.com/xo/xo/internal"
-	xo "github.com/xo/xo/types"
 )
 
 // Set holds a set of templates and handles generating files for a target
@@ -227,7 +227,6 @@ func (ts *Set) Pre(ctx context.Context, outDir string, mode string, set *xo.Set)
 		return
 	}
 	if target.Type.Pre == nil {
-
 	}
 	out := os.DirFS(outDir)
 	ts.err = target.Type.Pre(ctx, mode, set, out, ts.addFile(ctx))
@@ -355,7 +354,7 @@ func (ts *Set) Dump(out string) {
 	sort.Strings(files)
 	for _, file := range files {
 		buf := ts.files[file].Buf.Bytes()
-		if err := ioutil.WriteFile(filepath.Join(out, file), buf, 0644); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(out, file), buf, 0o644); err != nil {
 			ts.files[file].Err = append(ts.files[file].Err, err)
 		}
 	}

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#
+# Usage: bash gen.sh ./models/
+#
+
 set -a
 source .env
 set +a

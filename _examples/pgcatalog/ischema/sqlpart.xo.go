@@ -5,7 +5,7 @@ package ischema
 import (
 	"database/sql"
 
-	"github.com/xo/xo/_examples/pgcatalog/pgtypes"
+	"github.com/danicc097/xo/_examples/pgcatalog/pgtypes"
 )
 
 // SQLPart represents a row from 'information_schema.sql_parts'.

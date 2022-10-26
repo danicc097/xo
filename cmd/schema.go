@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/xo/loader"
+	"github.com/danicc097/xo/models"
+	xo "github.com/danicc097/xo/types"
 	"github.com/kenshaw/inflector"
-	"github.com/xo/xo/loader"
-	"github.com/xo/xo/models"
-	xo "github.com/xo/xo/types"
 )
 
 // LoadSchema loads a schema from a database.

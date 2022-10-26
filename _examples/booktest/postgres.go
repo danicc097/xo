@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	models "github.com/danicc097/xo/_examples/booktest/postgres"
 	"github.com/lib/pq"
-	models "github.com/xo/xo/_examples/booktest/postgres"
 )
 
 func runPostgres(ctx context.Context, db *sql.DB) error {

@@ -14,7 +14,7 @@ import (
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/xo/xo/cmd"
+	"github.com/danicc097/xo/cmd"
 )
 
 // version is the app version.

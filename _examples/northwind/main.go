@@ -18,8 +18,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	// models
-	"github.com/xo/xo/_examples/northwind/postgres"
-	"github.com/xo/xo/_examples/northwind/sqlite3"
+	"github.com/danicc097/xo/_examples/northwind/postgres"
+	"github.com/danicc097/xo/_examples/northwind/sqlite3"
 
 	"github.com/xo/dburl"
 	"github.com/xo/dburl/passfile"
