@@ -133,6 +133,7 @@ type Field struct {
 	Default     string `json:"default,omitempty"`
 	IsPrimary   bool   `json:"is_primary,omitempty"`
 	IsSequence  bool   `json:"is_sequence,omitempty"`
+	IsIgnored   bool   `json:"is_ignored,omitempty"`
 	ConstValue  *int   `json:"const_value,omitempty"`
 	Interpolate bool   `json:"interpolate,omitempty"`
 	Join        bool   `json:"join,omitempty"`
@@ -154,11 +155,11 @@ type Type struct {
 //
 // Expected formats:
 //
-//	type
-//	type(precision)
-//	type(precision, scale)
-//  type(precision, scale) unsigned
-//	timestamp(n) with [local] time zone (oracle only)
+//		type
+//		type(precision)
+//		type(precision, scale)
+//	 type(precision, scale) unsigned
+//		timestamp(n) with [local] time zone (oracle only)
 //
 // The returned type is stripped of precision and scale.
 func ParseType(typ, driver string) (Type, error) {

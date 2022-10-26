@@ -746,6 +746,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		Zero:       zero,
 		IsPrimary:  f.IsPrimary,
 		IsSequence: f.IsSequence,
+		IsIgnored:  f.IsIgnored,
 	}, nil
 }
 
@@ -2337,6 +2338,7 @@ type Field struct {
 	Zero       string
 	IsPrimary  bool
 	IsSequence bool
+	IsIgnored  bool
 	Comment    string
 }
 

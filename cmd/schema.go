@@ -253,6 +253,7 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table) error {
 			Default:    defaultValue,
 			IsPrimary:  c.IsPrimaryKey,
 			IsSequence: sqMap[c.ColumnName],
+			IsIgnored:  isIgnored(args, table.Name, c.ColumnName),
 		}
 		table.Columns = append(table.Columns, col)
 		if col.IsPrimary {
@@ -439,6 +440,21 @@ func validType(args *Args, skipIncludes bool, names ...string) bool {
 			return true
 		}
 	}
+	return false
+}
+
+func isIgnored(args *Args, names ...string) bool {
+	ignored := args.SchemaParams.Ignore.AsGlob()
+	if len(ignored) == 0 {
+		return false
+	}
+	target := strings.Join(names, ".")
+	for _, pattern := range ignored {
+		if pattern.Match(target) {
+			return true
+		}
+	}
+
 	return false
 }
 
