@@ -77,36 +77,3 @@ func PostgresTableForeignKeys(ctx context.Context, db DB, schema, table string) 
 	}
 	return res, nil
 }
-
-// Sqlite3TableForeignKeys runs a custom query, returning results as ForeignKey.
-func Sqlite3TableForeignKeys(ctx context.Context, db DB, schema, table string) ([]*ForeignKey, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`SELECT ` +
-		`id AS key_id, ` +
-		`"table" AS ref_table_name, ` +
-		`"from" AS column_name, ` +
-		`"to" AS ref_column_name ` +
-		`FROM pragma_foreign_key_list($1)`
-	// run
-	logf(sqlstr, table)
-	rows, err := db.QueryContext(ctx, sqlstr, table)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*ForeignKey
-	for rows.Next() {
-		var fk ForeignKey
-		// scan
-		if err := rows.Scan(&fk.KeyID, &fk.RefTableName, &fk.ColumnName, &fk.RefColumnName); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &fk)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}

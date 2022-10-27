@@ -12,11 +12,9 @@ import (
 
 	// drivers
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
 
 	// models
 	"github.com/danicc097/xo/_examples/booktest/postgres"
-	"github.com/danicc097/xo/_examples/booktest/sqlite3"
 
 	"github.com/xo/dburl"
 	"github.com/xo/dburl/passfile"
@@ -38,7 +36,6 @@ func run(ctx context.Context, verbose bool, dsn string) error {
 			fmt.Printf("-------------------------------------\nQUERY: %s\n  VAL: %v\n\n", s, v)
 		}
 		postgres.SetLogger(logger)
-		sqlite3.SetLogger(logger)
 	}
 	v, err := user.Current()
 	if err != nil {
@@ -58,8 +55,6 @@ func run(ctx context.Context, verbose bool, dsn string) error {
 	switch u.Driver {
 	case "postgres":
 		f = runPostgres
-	case "sqlite3":
-		f = runSqlite3
 	}
 	return f(ctx, db)
 }
@@ -68,13 +63,6 @@ func parse(dsn string) (*dburl.URL, error) {
 	v, err := dburl.Parse(dsn)
 	if err != nil {
 		return nil, err
-	}
-	switch v.Driver {
-	case "sqlite3":
-		q := v.Query()
-		q.Set("_loc", "auto")
-		v.RawQuery = q.Encode()
-		return dburl.Parse(v.String())
 	}
 	return v, nil
 }

@@ -62,38 +62,3 @@ func PostgresTableColumns(ctx context.Context, db DB, schema, table string, sys 
 	}
 	return res, nil
 }
-
-// Sqlite3TableColumns runs a custom query, returning results as Column.
-func Sqlite3TableColumns(ctx context.Context, db DB, schema, table string) ([]*Column, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`SELECT ` +
-		`cid AS field_ordinal, ` +
-		`name AS column_name, ` +
-		`type AS data_type, ` +
-		`"notnull" AS not_null, ` +
-		`dflt_value AS default_value, ` +
-		`CAST(pk <> 0 AS boolean) AS is_primary_key ` +
-		`FROM pragma_table_info($1)`
-	// run
-	logf(sqlstr, table)
-	rows, err := db.QueryContext(ctx, sqlstr, table)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*Column
-	for rows.Next() {
-		var c Column
-		// scan
-		if err := rows.Scan(&c.FieldOrdinal, &c.ColumnName, &c.DataType, &c.NotNull, &c.DefaultValue, &c.IsPrimaryKey); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &c)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}

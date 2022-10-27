@@ -49,35 +49,3 @@ func PostgresTableIndexes(ctx context.Context, db DB, schema, table string) ([]*
 	}
 	return res, nil
 }
-
-// Sqlite3TableIndexes runs a custom query, returning results as Index.
-func Sqlite3TableIndexes(ctx context.Context, db DB, schema, table string) ([]*Index, error) {
-	// query
-	sqlstr := `/* ` + schema + ` */ ` +
-		`SELECT ` +
-		`name AS index_name, ` +
-		`"unique" AS is_unique, ` +
-		`CAST(origin = 'pk' AS boolean) AS is_primary ` +
-		`FROM pragma_index_list($1)`
-	// run
-	logf(sqlstr, table)
-	rows, err := db.QueryContext(ctx, sqlstr, table)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*Index
-	for rows.Next() {
-		var i Index
-		// scan
-		if err := rows.Scan(&i.IndexName, &i.IsUnique, &i.IsPrimary); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-}

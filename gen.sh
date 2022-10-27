@@ -11,7 +11,6 @@ set +a
 docker-compose up -d --build
 
 PGDB="pg://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB?sslmode=disable"
-SQDB=sq:xo.db
 
 DEST=$1
 if [ -z "$DEST" ]; then
@@ -230,6 +229,53 @@ WHERE table_name = %%table string%%
   and is_generated = 'ALWAYS'
 ENDSQL
 
+# postgres trigger columns list query
+# COMMENT='{{ . }} represents trigger generated/updated columns.'
+# $XOBIN query "$PGDB" -M -B -2 -T Triggered -F PostgresTableTriggers --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
+# /*
+# TODO get affected rows from source case insens. (new.(.*)\s=)
+# */
+# /*
+# SELECT routines.specific_name,  routine_definition
+# FROM information_schema.routines
+#     LEFT JOIN information_schema.parameters ON routines.specific_name=parameters.specific_name
+# WHERE routines.specific_schema='public'
+# ORDER BY routines.routine_name, parameters.ordinal_position;
+# */
+
+# /*
+# SELECT format('%I.%I(%s)', ns.nspname, p.proname, oidvectortypes(p.proargtypes)), *
+# FROM pg_proc p INNER JOIN pg_namespace ns ON (p.pronamespace = ns.oid)
+# WHERE ns.nspname = 'public';*/
+
+# /*SELECT
+#     n.nspname AS function_schema,
+#     p.proname AS function_name,
+#     p.prosrc as source,
+# FROM
+#     pg_proc p
+#     LEFT JOIN pg_namespace n ON p.pronamespace = n.oid
+# WHERE
+#     n.nspname NOT IN ('pg_catalog', 'information_schema')
+# ORDER BY
+#     function_schema,
+#     function_name;*/
+
+# -- get trigger name per schema and table (we get source but its EXECUTE ...)
+# /*select event_object_schema as table_schema,
+#        event_object_table as table_name,
+#        trigger_schema,
+#        trigger_name,
+#        string_agg(event_manipulation, ',') as event,
+#        action_timing as activation,
+#        action_condition as condition,
+#        action_statement as definition
+# from information_schema.triggers
+# group by 1,2,3,4,6,7,8
+# order by table_schema,
+#          table_name;*/
+# ENDSQL
+
 # postgres table foreign key list query
 COMMENT='{{ . }} is a foreign key.'
 $XOBIN query "$PGDB" -M -B -2 -T ForeignKey -F PostgresTableForeignKeys --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
@@ -318,119 +364,4 @@ FROM pg_index i
   JOIN ONLY pg_class ic ON ic.oid = i.indexrelid
 WHERE n.nspname = %%schema string%%
   AND ic.relname = %%index string%%
-ENDSQL
-
-# sqlite3 view create query
-COMMENT='{{ . }} creates a view for introspection.'
-$XOBIN query $SQDB -M -B -X -F Sqlite3ViewCreate --func-comment "$COMMENT" --single=models.xo.go -I -a -o "$DEST" "$@" <<ENDSQL
-/* %%schema string,interpolate%% */
-CREATE TEMPORARY VIEW %%id string,interpolate%% AS %%query []string,interpolate,join%%
-ENDSQL
-
-# sqlite3 view drop query
-COMMENT='{{ . }} drops a view created for introspection.'
-$XOBIN query $SQDB -M -B -X -F Sqlite3ViewDrop --func-comment "$COMMENT" --single=models.xo.go -I -a -o "$DEST" "$@" <<ENDSQL
-/* %%schema string,interpolate%% */
-DROP VIEW %%id string,interpolate%%
-ENDSQL
-
-# sqlite3 schema query
-COMMENT='{{ . }} retrieves the schema.'
-$XOBIN query $SQDB -M -B -l -F Sqlite3Schema --func-comment "$COMMENT" --single=models.xo.go -a -o "$DEST" "$@" <<ENDSQL
-SELECT
-  REPLACE(file, RTRIM(file, REPLACE(file, '/', '')), '') AS schema_name
-FROM pragma_database_list()
-ENDSQL
-
-# sqlite3 table list query
-$XOBIN query $SQDB -M -B -2 -T Table -F Sqlite3Tables -I -a -o "$DEST" "$@" <<ENDSQL
-/* %%schema string,interpolate%% */
-SELECT
-  type,
-  tbl_name AS table_name,
-  CASE LOWER(type)
-    WHEN 'table' THEN ''
-    WHEN 'view' THEN sql
-  END AS view_def
-FROM sqlite_master
-WHERE tbl_name NOT LIKE 'sqlite_%'
-  AND LOWER(type) = LOWER(%%typ string%%)
-ENDSQL
-
-# sqlite3 table column list query
-$XOBIN query $SQDB -M -B -2 -T Column -F Sqlite3TableColumns -I -a -o "$DEST" "$@" <<ENDSQL
-/* %%schema string,interpolate%% */
-SELECT
-  cid AS field_ordinal,
-  name AS column_name,
-  type AS data_type,
-  "notnull" AS not_null,
-  dflt_value AS default_value,
-  CAST(pk <> 0 AS boolean) AS is_primary_key
-FROM pragma_table_info(%%table string%%)
-ENDSQL
-
-# sqlite3 sequence list query
-$XOBIN query $SQDB -M -B -2 -T Sequence -F Sqlite3TableSequences -I -a -o "$DEST" "$@" <<ENDSQL
-/* %%schema string,interpolate%% */
-WITH RECURSIVE
-  a AS (
-    SELECT name, lower(replace(replace(sql, char(13), ' '), char(10), ' ')) AS sql
-    FROM sqlite_master
-    WHERE lower(sql) LIKE '%integer% autoincrement%'
-  ),
-  b AS (
-    SELECT name, trim(substr(sql, instr(sql, '(') + 1)) AS sql
-    FROM a
-  ),
-  c AS (
-    SELECT b.name, sql, '' AS col
-    FROM b
-    UNION ALL
-    SELECT
-      c.name,
-      trim(substr(c.sql, ifnull(nullif(instr(c.sql, ','), 0), instr(c.sql, ')')) + 1)) AS sql,
-      trim(substr(c.sql, 1, ifnull(nullif(instr(c.sql, ','), 0), instr(c.sql, ')')) - 1)) AS col
-    FROM c JOIN b ON c.name = b.name
-    WHERE c.sql != ''
-  ),
-  d AS (
-    SELECT name, substr(col, 1, instr(col, ' ') - 1) AS col
-    FROM c
-    WHERE col LIKE '%autoincrement%'
-  )
-SELECT col AS column_name
-FROM d
-WHERE name = %%table string%%
-ENDSQL
-
-# sqlite3 table foreign key list query
-$XOBIN query $SQDB -M -B -2 -T ForeignKey -F Sqlite3TableForeignKeys -I -a -o "$DEST" "$@" <<ENDSQL
-/* %%schema string,interpolate%% */
-SELECT
-  id AS key_id,
-  "table" AS ref_table_name,
-  "from" AS column_name,
-  "to" AS ref_column_name
-FROM pragma_foreign_key_list(%%table string%%)
-ENDSQL
-
-# sqlite3 table index list query
-$XOBIN query $SQDB -M -B -2 -T Index -F Sqlite3TableIndexes -I -a -o "$DEST" "$@" <<ENDSQL
-/* %%schema string,interpolate%% */
-SELECT
-  name AS index_name,
-  "unique" AS is_unique,
-  CAST(origin = 'pk' AS boolean) AS is_primary
-FROM pragma_index_list(%%table string%%)
-ENDSQL
-
-# sqlite3 index column list query
-$XOBIN query $SQDB -M -B -2 -T IndexColumn -F Sqlite3IndexColumns -I -a -o "$DEST" "$@" <<ENDSQL
-/* %%schema string,interpolate%% %%table string,interpolate%% */
-SELECT
-  seqno AS seq_no,
-  cid,
-  name AS column_name
-FROM pragma_index_info(%%index string%%)
 ENDSQL

@@ -2,14 +2,18 @@
 
 SRC=$(realpath $(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd))
 
-DATABASES="postgres sqlite3"
+DATABASES="postgres"
 NAME=
 PASS=
 DATAFILE=
 
+set -a
+source booktest/.env
+set +a
+
 declare -A INIT
 INIT+=(
-  [postgres]=pg://localhost/
+  [postgres]="pg://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB?sslmode=disable"
 )
 
 OPTIND=1

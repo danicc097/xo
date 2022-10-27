@@ -7,7 +7,6 @@ TEST=$(basename $SRC)
 declare -A DSNS
 DSNS+=(
   [postgres]=pg://$TEST:$TEST@localhost/$TEST
-  [sqlite3]=sq:$TEST.db
 )
 
 APPLY=0

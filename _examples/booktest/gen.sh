@@ -4,15 +4,18 @@ SRC=$(realpath $(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd))
 
 TEST=$(basename $SRC)
 
+set -a
+source .env
+set +a
+
 declare -A DSNS
 DSNS+=(
-  [postgres]=pg://$TEST:$TEST@localhost/$TEST
-  [sqlite3]=sq:$TEST.db
+  [postgres]="pg://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$TEST?sslmode=disable"
 )
 
 APPLY=0
 BUILD=0
-DATABASES="postgres sqlite3"
+DATABASES="postgres"
 ARGS=()
 
 OPTIND=1
@@ -91,7 +94,6 @@ for TYPE in $DATABASES; do
     go build ./$TYPE
     go build
     ./$TEST -dsn $DB ${ARGS[@]}
-    usql -c 'select * from books;' $DB
   )
 done
 

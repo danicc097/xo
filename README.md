@@ -3,12 +3,16 @@
 An opinionated fork of [`xo`](https://github.com/danicc097/xo) compatible with
 [`sqlc`](https://github.com/kyleconroy/sqlc) output.
 
-Features (WIP):
+Features:
 
 - `pgx` as only Postgres driver.
-- Better use of excluded/ignored table columns.
+- `--ignore` to exclude table columns from insertion. Common use cases:
+  `created_at`, `updated_at` fields.
 
-Supports Postgres and SQLite3.
+Features (WIP):
+-
+
+This project will only support PostgreSQL.
 
 #### Supported languages
 
