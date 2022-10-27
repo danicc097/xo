@@ -1,6 +1,9 @@
-Relevant forks:
+Relevant forks: https://github.com/sundayfun/xo/commits/master
 
-- https://github.com/sundayfun/xo/commits/master
+- remove sqlite. will use a lot of postgres magic and wont find equivalents
+
+- Use PostgresTableGenerations to exclude these fields
+  (`generated always as...`) from insert queries, but include in `returning ...`.
 
 - materialized views (same as tables but relkind="m" and generate queries from
   indexes only)
