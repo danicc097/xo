@@ -229,6 +229,67 @@ WHERE table_name = %%table string%%
   and is_generated = 'ALWAYS'
 ENDSQL
 
+# TODO discover foreign keys in other tables for the current pk pk1:
+# and allow for optional join with discovered lookup tables and return json_agg of the recursively joined fks
+# example:
+# users, user_organization, organizations -> queries for users.xo.go
+# have optional bool parameter joinOrganization
+# we don't need to generate rows to select from the join. we can use json_agg(o.*)).
+# because when we unmarshal into Organization struct excluded fields are not in the struct already.
+# see:
+# https://stackoverflow.com/questions/64295547/unmarshal-json-array-into-struct-array
+
+# if !joinOrgs then slice pointer to *[]Organizations is nil so we can
+# distinguish when a user has no orgs or they were not selected
+# ()
+# select
+#   users.*,
+# -- if joinOrgs is false all we do is a scan of users (see explain analyze).
+#   (case when :joinOrgs = true then joined_organizations.organizations end) as organizations
+# from
+#   users
+#   left join (
+#     select
+#       user_id,
+#       json_agg(o.*) as organizations
+#     from
+#       user_organization uo
+#       join organizations o using (organization_id)
+#     where
+#       --:joinOrgs = true and
+#       user_id in (
+#         select
+#           user_id
+#         from
+#           user_organization
+#         where
+#           organization_id = any (
+#             select
+#               organization_id
+#             from
+#               organizations))
+#         group by
+#           user_id) joined_organizations using (user_id);
+
+# viewing pk used as foreign keys:
+# SELECT
+#     tc.table_schema,
+#     tc.constraint_name,
+#     tc.table_name,
+#     kcu.column_name,
+#     ccu.table_schema AS foreign_table_schema,
+#     ccu.table_name AS foreign_table_name,
+#     ccu.column_name AS foreign_column_name
+# FROM
+#     information_schema.table_constraints AS tc
+#     JOIN information_schema.key_column_usage AS kcu
+#       ON tc.constraint_name = kcu.constraint_name
+#       AND tc.table_schema = kcu.table_schema
+#     JOIN information_schema.constraint_column_usage AS ccu
+#       ON ccu.constraint_name = tc.constraint_name
+#       AND ccu.table_schema = tc.table_schema
+# WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='<table>';
+
 # postgres trigger columns list query
 # COMMENT='{{ . }} represents trigger generated/updated columns.'
 # $XOBIN query "$PGDB" -M -B -2 -T Triggered -F PostgresTableTriggers --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
