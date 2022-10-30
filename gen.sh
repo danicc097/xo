@@ -229,15 +229,17 @@ WHERE table_name = %%table string%%
   and is_generated = 'ALWAYS'
 ENDSQL
 
+# -------------------------------------------------------
+
 # TODO discover foreign keys in other tables for the current pk pk1:
 # and allow for optional join with discovered lookup tables and return json_agg of the recursively joined fks
 # example:
 # users, user_organization, organizations -> queries for users.xo.go
-# have optional bool parameter joinOrganization
+# have struct parameter for selects only: UserJoins{JoinOrganization: boolean, ...}
 # we don't need to generate rows to select from the join. we can use json_agg(o.*)).
 # because when we unmarshal into Organization struct excluded fields are not in the struct already.
-# see:
-# https://stackoverflow.com/questions/64295547/unmarshal-json-array-into-struct-array
+# NOTE: because we know the json fields in advanced, we can work with []byte returned by json_agg
+# see https://www.alexedwards.net/blog/using-postgresql-jsonb
 
 # if !joinOrgs then slice pointer to *[]Organizations is nil so we can
 # distinguish when a user has no orgs or they were not selected
@@ -254,7 +256,7 @@ ENDSQL
 #       json_agg(o.*) as organizations
 #     from
 #       user_organization uo
-#       join organizations o using (organization_id)
+#       join organizations o using (organization_id) -- generated one should use on x.pk1 = y.pk2 and not assume same name
 #     where
 #       --:joinOrgs = true and
 #       user_id in (
@@ -289,6 +291,52 @@ ENDSQL
 #       ON ccu.constraint_name = tc.constraint_name
 #       AND ccu.table_schema = tc.table_schema
 # WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='<table>';
+
+# better solution:
+# select relations.table_name as table_name,
+#        array_remove( array_agg(relations.table_name), NULL) as relationships,
+#        array_remove( array_agg(relations.referenced_tables), NULL) as foreign_keys,
+#        array_remove( array_agg(relations.referencing_tables), NULL) as references,
+#        array_remove( array_agg(distinct related_table), NULL) as related_tables,
+#        array_remove( array_agg(distinct relations.referenced_tables), NULL) as referenced_tables,
+#        array_remove( array_agg(distinct relations.referencing_tables), NULL) as referencing_tables
+# from(
+#      select pk_tco.table_schema || '.' || pk_tco.table_name as table_name,
+#             fk_tco.table_schema || '.' || fk_tco.table_name as related_table,
+#             fk_tco.table_name as referencing_tables,
+#             null::varchar(100) as referenced_tables
+#      from information_schema.referential_constraints rco
+#      join information_schema.table_constraints fk_tco
+#           on rco.constraint_name = fk_tco.constraint_name
+#           and rco.constraint_schema = fk_tco.table_schema
+#      join information_schema.table_constraints pk_tco
+#           on rco.unique_constraint_name = pk_tco.constraint_name
+#           and rco.unique_constraint_schema = pk_tco.table_schema
+#     union all
+#     select fk_tco.table_schema || '.' || fk_tco.table_name as table_name,
+#            pk_tco.table_schema || '.' || pk_tco.table_name as related_table,
+#            null as referencing_tables,
+#            pk_tco.table_name as referenced_tables
+#     from information_schema.referential_constraints rco
+#     join information_schema.table_constraints fk_tco
+#          on rco.constraint_name = fk_tco.constraint_name
+#          and rco.constraint_schema = fk_tco.table_schema
+#     join information_schema.table_constraints pk_tco
+#          on rco.unique_constraint_name = pk_tco.constraint_name
+#          and rco.unique_constraint_schema = pk_tco.table_schema
+# ) relations
+# group by table_name
+# order by relationships desc;
+# | table_name              | relationships                                      | foreign_keys         | references                  | related_tables                            | referenced_tables    | referencing_tables
+# | ----------              | -------------                                      | ------------         | ----------                  | --------------                            | -----------------    | ------------------
+# | public.users            | {public.users,public.users}                        | {}                   | {api_keys,user_organization}| {public.api_keys,public.user_organization}| {}                   | {api_keys,user_organization}
+# | public.user_organization| {public.user_organization,public.user_organization}| {organizations,users}| {}                          | {public.organizations,public.users}       | {organizations,users}| {}
+# | public.projects         | {public.projects}                                  | {organizations}      | {}                          | {public.organizations}                    | {organizations}      | {}
+# | public.organizations    | {public.organizations,public.organizations}        | {}                   | {user_organization,projects}| {public.projects,public.user_organization}| {}                   | {projects,user_organization}
+# | public.api_keys         | {public.api_keys}                                  | {users}              | {}                          | {public.users}                            | {users}              | {}
+# |                         |                                                    |                      |                             |                                           |                      |
+
+# -------------------------------------------------------
 
 # postgres trigger columns list query
 # COMMENT='{{ . }} represents trigger generated/updated columns.'
@@ -379,6 +427,18 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
   AND tc.table_name = %%table string%%
 ENDSQL
 
+# TODO need to account for index WHERE condition at least, or ignore index if contains it
+# SELECT
+#     tablename,
+#     indexname,
+#     indexdef
+# FROM
+#     pg_indexes
+# WHERE
+#     schemaname = 'public'
+# ORDER BY
+#     tablename,
+#     indexname;
 # postgres table index list query
 COMMENT='{{ . }} is a index.'
 $XOBIN query "$PGDB" -M -B -2 -T Index -F PostgresTableIndexes --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL

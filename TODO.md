@@ -1,6 +1,7 @@
 Relevant forks: https://github.com/sundayfun/xo/commits/master
 
-- remove sqlite. will use a lot of postgres magic and wont find equivalents
+- generate separate queries `where deleted_at is null`
+and `where deleted_at is not null` with query struct field
 
 - columns where there is a trigger with insert should be excluded
   (instead of manually adding --ignore *.created_at, etc.)
@@ -21,6 +22,9 @@ Relevant forks: https://github.com/sundayfun/xo/commits/master
 
 - primary key with uuid should be detected (for other generated cols use
   --ignore instead)
+
+-  if index has WHERE condition it should be reflected in the generated query
+   and change method name (right now clashing)
 
 - ~~new --go-postgres-driver flag (pgx|stdlib)~~ (pgx only)
 
