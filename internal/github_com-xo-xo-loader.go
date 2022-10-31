@@ -25,7 +25,6 @@ func init() {
 		"Procs":                reflect.ValueOf(loader.Procs),
 		"Register":             reflect.ValueOf(loader.Register),
 		"Schema":               reflect.ValueOf(loader.Schema),
-		"Sqlite3GoType":        reflect.ValueOf(loader.Sqlite3GoType),
 		"StdlibPostgresGoType": reflect.ValueOf(loader.StdlibPostgresGoType),
 		"TableColumns":         reflect.ValueOf(loader.TableColumns),
 		"TableForeignKeys":     reflect.ValueOf(loader.TableForeignKeys),

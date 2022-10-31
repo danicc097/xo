@@ -280,9 +280,10 @@ func LoadTableIndexes(ctx context.Context, args *Args, table *xo.Table) error {
 		priIxLoaded = priIxLoaded || index.IsPrimary
 		// create index template
 		index := &xo.Index{
-			Name:      index.IndexName,
-			IsPrimary: index.IsPrimary,
-			IsUnique:  index.IsUnique,
+			Name:            index.IndexName,
+			IsPrimary:       index.IsPrimary,
+			IsUnique:        index.IsUnique,
+			IndexDefinition: index.IndexDefinition,
 		}
 		// load index columns
 		if err := LoadIndexColumns(ctx, args, table, index); err != nil {
@@ -299,7 +300,7 @@ func LoadTableIndexes(ctx context.Context, args *Args, table *xo.Table) error {
 	// however, oracle is omitted because indexes for primary keys are not marked
 	// as such from introspection queries.
 	driver, _, _ := xo.DriverDbSchema(ctx)
-	if driver != "oracle" && !priIxLoaded && len(pkeys) != 0 {
+	if !priIxLoaded && len(pkeys) != 0 {
 		indexName := table.Name + "_"
 		for _, pkey := range pkeys {
 			indexName += pkey.Name + "_"

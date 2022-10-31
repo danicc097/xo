@@ -1,18 +1,20 @@
 # xo-sqlc
 
-An opinionated fork of [`xo`](https://github.com/danicc097/xo) compatible with
+An opinionated fork of [`xo`](https://github.com/xo/xo) compatible with
 [`sqlc`](https://github.com/kyleconroy/sqlc) output.
 
-Features:
+Features over original `xo`:
 
-- `pgx` as only Postgres driver.
+- Exclusive support for PostgreSQL. `pgx` as only driver.
 - `--ignore` to exclude table columns from insertion. Common use cases:
   `created_at`, `updated_at` fields.
+- Index definition conditions are accounted for. For example:
+`CREATE UNIQUE INDEX ... (user_id, external_id) WHERE (external_id IS NOT NULL)`
+ generates a
+ `... WHERE user_id = $1 AND external_id = $2 AND (external_id IS NOT NULL)`
+ query.
 
-Features (WIP):
--
-
-This project will only support PostgreSQL.
+Features (WIP): see [TODOs](./TODO.md)
 
 #### Supported languages
 

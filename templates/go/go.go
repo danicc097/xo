@@ -763,8 +763,6 @@ func goType(ctx context.Context, typ xo.Type) (string, string, error) {
 		default:
 			return "", "", fmt.Errorf("unknown array mode: %q", mode)
 		}
-	case "sqlite3":
-		f = loader.Sqlite3GoType
 	default:
 		return "", "", fmt.Errorf("unknown driver %q", driver)
 	}

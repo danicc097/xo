@@ -109,11 +109,12 @@ func (t Table) MarshalYAML() (interface{}, error) {
 
 // Index is a index.
 type Index struct {
-	Name      string  `json:"name,omitempty"`
-	Fields    []Field `json:"fields,omitempty"`
-	IsUnique  bool    `json:"is_unique,omitempty"`
-	IsPrimary bool    `json:"is_primary,omitempty"`
-	Func      string  `json:"-"`
+	Name            string  `json:"name,omitempty"`
+	Fields          []Field `json:"fields,omitempty"`
+	IsUnique        bool    `json:"is_unique,omitempty"`
+	IsPrimary       bool    `json:"is_primary,omitempty"`
+	IndexDefinition string  `json:"index_definition,omitempty"`
+	Func            string  `json:"-"`
 }
 
 // ForeignKey is a foreign key.

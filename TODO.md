@@ -1,13 +1,10 @@
 Relevant forks: https://github.com/sundayfun/xo/commits/master
 
-- generate separate queries `where deleted_at is null`
-and `where deleted_at is not null` with query struct field
-
 - columns where there is a trigger with insert should be excluded
   (instead of manually adding --ignore *.created_at, etc.)
 
-- Use PostgresTableGenerations to exclude these fields
-  (`generated always as...`) from insert queries, but include in `returning ...`.
+- Use PostgresTableGenerations to exclude fields`generated always as...`
+from insert queries, but include in `returning ...`.
 
 - materialized views are just regular tables, we should be able to use
   exactly the same code but tables to use come from selecting using relkind="m"
