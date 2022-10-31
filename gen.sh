@@ -224,8 +224,8 @@ $XOBIN query "$PGDB" -M -B -2 -T Generated -F PostgresTableGenerations --type-co
 SELECT
   column_name
 FROM information_schema.columns
-WHERE table_name = %%table string%%
-  and table_schema = %%schema string%%
+WHERE table_schema = %%schema string%%
+  and table_name = %%table string%%
   and is_generated = 'ALWAYS'
 ENDSQL
 

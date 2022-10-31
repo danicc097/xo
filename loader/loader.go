@@ -189,7 +189,7 @@ func TableSequences(ctx context.Context, table string) ([]*models.Sequence, erro
 	return l.TableSequences(ctx, db, schema, table)
 }
 
-// TableGenerations returns the database table sequences.
+// TableGenerations returns the database table generations.
 func TableGenerations(ctx context.Context, table string) ([]*models.Generated, error) {
 	db, l, schema, err := get(ctx)
 	if err != nil {

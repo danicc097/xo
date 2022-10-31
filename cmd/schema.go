@@ -233,9 +233,9 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table) error {
 		return err
 	}
 	genMap := make(map[string]bool)
-	for _, s := range generations {
-		table.Manual = false
-		genMap[s.ColumnName] = true
+	for _, g := range generations {
+		table.Manual = true
+		genMap[g.ColumnName] = true
 	}
 	// load columns
 	columns, err := loader.TableColumns(ctx, table.Name)

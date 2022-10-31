@@ -9,7 +9,6 @@ require (
 	github.com/kenshaw/inflector v0.2.0
 	github.com/kenshaw/snaker v0.2.0
 	github.com/lib/pq v1.10.7
-	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/spf13/cobra v1.6.0
 	github.com/traefik/yaegi v0.14.2
 	github.com/xo/dburl v0.12.4
