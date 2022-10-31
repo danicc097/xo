@@ -227,6 +227,16 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table) error {
 		table.Manual = false
 		sqMap[s.ColumnName] = true
 	}
+	// load generated columns
+	generations, err := loader.TableGenerations(ctx, table.Name)
+	if err != nil {
+		return err
+	}
+	genMap := make(map[string]bool)
+	for _, s := range generations {
+		table.Manual = false
+		genMap[s.ColumnName] = true
+	}
 	// load columns
 	columns, err := loader.TableColumns(ctx, table.Name)
 	if err != nil {
@@ -248,12 +258,13 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table) error {
 			defaultValue = ""
 		}
 		col := xo.Field{
-			Name:       c.ColumnName,
-			Type:       d,
-			Default:    defaultValue,
-			IsPrimary:  c.IsPrimaryKey,
-			IsSequence: sqMap[c.ColumnName],
-			IsIgnored:  isIgnored(args, table.Name, c.ColumnName),
+			Name:        c.ColumnName,
+			Type:        d,
+			Default:     defaultValue,
+			IsPrimary:   c.IsPrimaryKey,
+			IsSequence:  sqMap[c.ColumnName],
+			IsGenerated: genMap[c.ColumnName],
+			IsIgnored:   isIgnored(args, table.Name, c.ColumnName),
 		}
 		table.Columns = append(table.Columns, col)
 		if col.IsPrimary {

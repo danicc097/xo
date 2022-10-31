@@ -31,8 +31,7 @@ func PostgresTableIndexes(ctx context.Context, db DB, schema, table string) ([]*
 		`where ` +
 		`i.indkey <> '0' ` +
 		`AND n.nspname = $1 ` +
-		`AND c.relname = $2 ` +
-		`;`
+		`AND c.relname = $2`
 	// run
 	logf(sqlstr, schema, table)
 	rows, err := db.QueryContext(ctx, sqlstr, schema, table)

@@ -134,6 +134,7 @@ type Field struct {
 	Default     string `json:"default,omitempty"`
 	IsPrimary   bool   `json:"is_primary,omitempty"`
 	IsSequence  bool   `json:"is_sequence,omitempty"`
+	IsGenerated bool   `json:"is_generated,omitempty"`
 	IsIgnored   bool   `json:"is_ignored,omitempty"`
 	ConstValue  *int   `json:"const_value,omitempty"`
 	Interpolate bool   `json:"interpolate,omitempty"`

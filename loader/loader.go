@@ -189,6 +189,15 @@ func TableSequences(ctx context.Context, table string) ([]*models.Sequence, erro
 	return l.TableSequences(ctx, db, schema, table)
 }
 
+// TableGenerations returns the database table sequences.
+func TableGenerations(ctx context.Context, table string) ([]*models.Generated, error) {
+	db, l, schema, err := get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return l.TableGenerations(ctx, db, schema, table)
+}
+
 // TableForeignKeys returns the database table foreign keys.
 func TableForeignKeys(ctx context.Context, table string) ([]*models.ForeignKey, error) {
 	db, l, schema, err := get(ctx)
