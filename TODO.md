@@ -5,10 +5,11 @@ Relevant forks: https://github.com/sundayfun/xo/commits/master
 (is this intended?)
 
 - dynamic `orderBy UserOrderBy` options struct field if index found for
-  timestamp column. Get appended after any select if present and can be
+  timestamp column (Field.IsDateOrTime). Get appended after any select if present and can be
   combined:
   order by updated_at desc, created_at desc,
  `type UserOrderBy = string , UserCreatedAtDesc UserOrderBy = "UserCreatedAtDesc" `
+  with a ``limit *`` struct option appended .
 
 - (not that worth it) replicate sqlc enum gen - also a go template, should be trivial to port to xo
   and disable sqlc enum generation with PR

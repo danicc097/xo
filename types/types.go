@@ -132,16 +132,17 @@ type ForeignKey struct {
 
 // Field is a column, index, enum value, or stored procedure parameter.
 type Field struct {
-	Name        string `json:"name,omitempty"`
-	Type        Type   `json:"datatype,omitempty"`
-	Default     string `json:"default,omitempty"`
-	IsPrimary   bool   `json:"is_primary,omitempty"`
-	IsSequence  bool   `json:"is_sequence,omitempty"`
-	IsGenerated bool   `json:"is_generated,omitempty"`
-	IsIgnored   bool   `json:"is_ignored,omitempty"`
-	ConstValue  *int   `json:"const_value,omitempty"`
-	Interpolate bool   `json:"interpolate,omitempty"`
-	Join        bool   `json:"join,omitempty"`
+	Name         string `json:"name,omitempty"`
+	Type         Type   `json:"datatype,omitempty"`
+	Default      string `json:"default,omitempty"`
+	IsPrimary    bool   `json:"is_primary,omitempty"`
+	IsSequence   bool   `json:"is_sequence,omitempty"`
+	IsGenerated  bool   `json:"is_generated,omitempty"`
+	IsIgnored    bool   `json:"is_ignored,omitempty"`
+	ConstValue   *int   `json:"const_value,omitempty"`
+	Interpolate  bool   `json:"interpolate,omitempty"`
+	Join         bool   `json:"join,omitempty"`
+	IsDateOrTime bool   `json:"is_date_or_time,omitempty"`
 }
 
 // Type holds information for a database type.

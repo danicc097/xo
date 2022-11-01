@@ -270,14 +270,16 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table, enums []xo.En
 		if idx := slices.IndexFunc(enums, func(e xo.Enum) bool { return e.Name == c.DataType }); idx != -1 {
 			d.Enum = &enums[idx]
 		}
+		dateTimeTypes := []string{"date", "timestamp with time zone", "time with time zone", "time without time zone", "timestamp without time zone"}
 		col := xo.Field{
-			Name:        c.ColumnName,
-			Type:        d,
-			Default:     defaultValue,
-			IsPrimary:   c.IsPrimaryKey,
-			IsSequence:  sqMap[c.ColumnName],
-			IsGenerated: genMap[c.ColumnName],
-			IsIgnored:   isIgnored(args, table.Name, c.ColumnName),
+			Name:         c.ColumnName,
+			Type:         d,
+			Default:      defaultValue,
+			IsPrimary:    c.IsPrimaryKey,
+			IsSequence:   sqMap[c.ColumnName],
+			IsGenerated:  genMap[c.ColumnName],
+			IsIgnored:    isIgnored(args, table.Name, c.ColumnName),
+			IsDateOrTime: slices.Contains(dateTimeTypes, d.Type),
 		}
 		table.Columns = append(table.Columns, col)
 		if col.IsPrimary {
