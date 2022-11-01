@@ -66,8 +66,10 @@ func (s Schema) EnumByName(name string) *Enum {
 
 // Enum is a enum type.
 type Enum struct {
-	Name   string  `json:"name,omitempty"`
-	Values []Field `json:"values,omitempty"`
+	Name    string  `json:"name,omitempty"`
+	Values  []Field `json:"values,omitempty"`
+	Schema  string  `json:"schema,omitempty"`
+	EnumPkg string  `json:"enum_pkg,omitempty"`
 }
 
 // Proc is a stored procedure.
@@ -165,17 +167,6 @@ type Type struct {
 //
 // The returned type is stripped of precision and scale.
 func ParseType(typ, driver string) (Type, error) {
-	// special case for oracle timestamp(n) with [local] time zone
-	if m := oracleTimestampRE.FindStringSubmatch(typ); driver == "oracle" && m != nil {
-		prec, err := strconv.Atoi(m[1])
-		if err != nil {
-			return Type{}, fmt.Errorf("could not parse precision: %w", err)
-		}
-		return Type{
-			Type: "timestamp " + m[2],
-			Prec: prec,
-		}, nil
-	}
 	// extract is array
 	isArray := false
 	if strings.HasSuffix(typ, "[]") {
@@ -210,6 +201,7 @@ func ParseType(typ, driver string) (Type, error) {
 		Scale:    scale,
 		IsArray:  isArray,
 		Unsigned: unsigned,
+		// Enum: ,
 	}, nil
 }
 

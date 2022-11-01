@@ -9,6 +9,7 @@ import (
 // ForeignKey is a foreign key.
 type ForeignKey struct {
 	ForeignKeyName string `json:"foreign_key_name"` // foreign_key_name
+	TableName      string `json:"table_name"`       // table_name
 	ColumnName     string `json:"column_name"`      // column_name
 	RefTableName   string `json:"ref_table_name"`   // ref_table_name
 	RefColumnName  string `json:"ref_column_name"`  // ref_column_name
@@ -20,6 +21,7 @@ func PostgresTableForeignKeys(ctx context.Context, db DB, schema, table string) 
 	// query
 	const sqlstr = `SELECT ` +
 		`tc.constraint_name, ` + // ::varchar AS foreign_key_name
+		`tc.table_name as table_name, ` +
 		`kcu.column_name, ` + // ::varchar AS column_name
 		`ccu.table_name, ` + // ::varchar AS ref_table_name
 		`ccu.column_name, ` + // ::varchar AS ref_column_name
@@ -67,7 +69,7 @@ func PostgresTableForeignKeys(ctx context.Context, db DB, schema, table string) 
 	for rows.Next() {
 		var fk ForeignKey
 		// scan
-		if err := rows.Scan(&fk.ForeignKeyName, &fk.ColumnName, &fk.RefTableName, &fk.RefColumnName, &fk.KeyID); err != nil {
+		if err := rows.Scan(&fk.ForeignKeyName, &fk.TableName, &fk.ColumnName, &fk.RefTableName, &fk.RefColumnName, &fk.KeyID); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &fk)

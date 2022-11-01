@@ -13,6 +13,7 @@ import (
 	"github.com/danicc097/xo/models"
 	xo "github.com/danicc097/xo/types"
 	"github.com/kenshaw/inflector"
+	"golang.org/x/exp/slices"
 )
 
 // LoadSchema loads a schema from a database.
@@ -24,16 +25,17 @@ func LoadSchema(ctx context.Context, set *xo.Set, args *Args) error {
 	}
 	var err error
 	// load enums, procs, tables, views
-	if schema.Enums, err = LoadEnums(ctx, args); err != nil {
+	enums, err := LoadEnums(ctx, args)
+	if err != nil {
 		return err
 	}
 	if schema.Procs, err = LoadProcs(ctx, args); err != nil {
 		return err
 	}
-	if schema.Tables, err = LoadTables(ctx, args, "table"); err != nil {
+	if schema.Tables, err = LoadTables(ctx, args, "table", enums); err != nil {
 		return err
 	}
-	if schema.Views, err = LoadTables(ctx, args, "view"); err != nil {
+	if schema.Views, err = LoadTables(ctx, args, "view", enums); err != nil {
 		return err
 	}
 	// emit
@@ -51,6 +53,7 @@ func LoadEnums(ctx context.Context, args *Args) ([]xo.Enum, error) {
 	sort.Slice(enumNames, func(i, j int) bool {
 		return enumNames[i].EnumName < enumNames[j].EnumName
 	})
+
 	// process enums
 	var enums []xo.Enum
 	for _, enum := range enumNames {
@@ -58,7 +61,9 @@ func LoadEnums(ctx context.Context, args *Args) ([]xo.Enum, error) {
 			continue
 		}
 		e := &xo.Enum{
-			Name: enum.EnumName,
+			Name:    enum.EnumName,
+			Schema:  enum.Schema,
+			EnumPkg: args.SchemaParams.MainSchemaPkg.AsString(),
 		}
 		if err := LoadEnumValues(ctx, args, e); err != nil {
 			return nil, err
@@ -172,8 +177,8 @@ func LoadProcParams(ctx context.Context, args *Args, proc *xo.Proc) error {
 	return nil
 }
 
-// LoadTables loads types for the type (ie, table/view definitions).
-func LoadTables(ctx context.Context, args *Args, typ string) ([]xo.Table, error) {
+// LoadTables loads types for the type (table, view)
+func LoadTables(ctx context.Context, args *Args, typ string, enums []xo.Enum) ([]xo.Table, error) {
 	// load tables
 	tables, err := loader.Tables(ctx, typ)
 	if err != nil {
@@ -196,7 +201,7 @@ func LoadTables(ctx context.Context, args *Args, typ string) ([]xo.Table, error)
 			Definition: strings.TrimSpace(table.ViewDef),
 		}
 		// process columns
-		if err := LoadColumns(ctx, args, t); err != nil {
+		if err := LoadColumns(ctx, args, t, enums); err != nil {
 			return nil, err
 		}
 		// load indexes
@@ -215,7 +220,7 @@ func LoadTables(ctx context.Context, args *Args, typ string) ([]xo.Table, error)
 }
 
 // LoadColumns loads table/view columns.
-func LoadColumns(ctx context.Context, args *Args, table *xo.Table) error {
+func LoadColumns(ctx context.Context, args *Args, table *xo.Table, enums []xo.Enum) error {
 	driver, _, _ := xo.DriverDbSchema(ctx)
 	// load sequences
 	sequences, err := loader.TableSequences(ctx, table.Name)
@@ -256,6 +261,10 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table) error {
 		defaultValue := c.DefaultValue.String
 		if defaultValue == "NULL" || sqMap[c.ColumnName] {
 			defaultValue = ""
+		}
+		// check if column is of any known enum type from public + current schema
+		if idx := slices.IndexFunc(enums, func(e xo.Enum) bool { return e.Name == c.DataType }); idx != -1 {
+			d.Enum = &enums[idx]
 		}
 		col := xo.Field{
 			Name:        c.ColumnName,
@@ -429,10 +438,6 @@ func LoadTableForeignKeys(ctx context.Context, args *Args, tables []xo.Table, ta
 
 // validType returns whether the type name given is valid, given the --include
 // and --exclude options provided by the user.
-// TODO should have a soft exclude that excludes fields for inserts, etc. but can
-// retrieve, e.g. created_at, updated_at is db managed but we want to have them in the struct
-// and returned on queries.
-// i.e. the same logic for generated pks should be applied, need to find where that is.
 func validType(args *Args, skipIncludes bool, names ...string) bool {
 	include, exclude := args.SchemaParams.Include.AsGlob(), args.SchemaParams.Exclude.AsGlob()
 	if len(include) == 0 && len(exclude) == 0 {

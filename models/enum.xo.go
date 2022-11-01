@@ -9,6 +9,7 @@ import (
 // Enum is a enum.
 type Enum struct {
 	EnumName string `json:"enum_name"` // enum_name
+	Schema string  `json:"schema"`
 }
 
 // PostgresEnums runs a custom query, returning results as Enum.
