@@ -38,6 +38,9 @@ func LoadSchema(ctx context.Context, set *xo.Set, args *Args) error {
 	if schema.Views, err = LoadTables(ctx, args, "view", enums); err != nil {
 		return err
 	}
+	if schema.MatViews, err = LoadTables(ctx, args, "mat_view", enums); err != nil {
+		return err
+	}
 	// emit
 	set.Schemas = append(set.Schemas, schema)
 	return nil
@@ -195,9 +198,10 @@ func LoadTables(ctx context.Context, args *Args, typ string, enums []xo.Enum) ([
 		}
 		// create table
 		t := &xo.Table{
-			Type:       typ,
-			Name:       table.TableName,
-			Manual:     true,
+			Type:   typ,
+			Name:   table.TableName,
+			Manual: true,
+			// NOTE: this is not used to generate, just for yaml output
 			Definition: strings.TrimSpace(table.ViewDef),
 		}
 		// process columns
