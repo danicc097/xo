@@ -241,37 +241,36 @@ ENDSQL
 # NOTE: because we know the json fields in advanced, we can work with []byte returned by json_agg
 # see https://www.alexedwards.net/blog/using-postgresql-jsonb
 
-# if !joinOrgs then slice pointer to *[]Organizations is nil so we can
-# distinguish when a user has no orgs or they were not selected
+# to discover specific relation types (o2m, m2m, o2o) maybe checkout `ent`
+
 # ()
 # select
 #   users.*,
 # -- if joinOrgs is false all we do is a scan of users (see explain analyze).
-#   (case when :joinOrgs = true then joined_organizations.organizations end) as organizations
+#   (case when :joinOrgs = true then joined_projects.projects end) as projects
 # from
 #   users
-#   left join (
+#   join (
 #     select
-#       user_id,
-#       json_agg(o.*) as organizations
+#       user_id
+#       , ARRAY_AGG(projects.*) as projects
 #     from
-#       user_organization uo
-#       join organizations o using (organization_id) -- generated one should use on x.pk1 = y.pk2 and not assume same name
+#       user_project uo
+#       join projects using (project_id)
 #     where
-#       --:joinOrgs = true and
 #       user_id in (
 #         select
 #           user_id
 #         from
-#           user_organization
+#           user_project
 #         where
-#           organization_id = any (
+#           project_id = any (
 #             select
-#               organization_id
+#               project_id
 #             from
-#               organizations))
+#               projects))
 #         group by
-#           user_id) joined_organizations using (user_id);
+#           user_id) joined_projects using (user_id);
 
 # viewing pk used as foreign keys:
 # SELECT
@@ -390,6 +389,7 @@ COMMENT='{{ . }} is a foreign key.'
 $XOBIN query "$PGDB" -M -B -2 -T ForeignKey -F PostgresTableForeignKeys --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
 SELECT
   tc.constraint_name::varchar AS foreign_key_name,
+  tc.table_name as table_name,
   kcu.column_name::varchar AS column_name,
   ccu.table_name::varchar AS ref_table_name,
   ccu.column_name::varchar AS ref_column_name,
@@ -426,6 +426,18 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
   AND tc.table_schema = %%schema string%%
   AND tc.table_name = %%table string%%
 ENDSQL
+# | foreign_key_name                        | column_name    | ref_table_name| ref_column_name| key_id
+# | ----------------                        | -----------    | --------------| ---------------| ------
+# | projects_organization_id_fkey           | organization_id| organizations | organization_id| 0
+# | user_project_project_id_fkey            | project_id     | projects      | project_id     | 0
+# | user_project_user_id_fkey               | user_id        | users         | user_id        | 0
+# | task_member_member_fkey                 | member         | users         | user_id        | 0
+# | work_item_task_task_id_fkey             | task_id        | tasks         | task_id        | 0
+# | work_item_task_work_item_id_fkey        | work_item_id   | work_items    | work_item_id   | 0
+# | kanban_steps_project_id_fkey            | project_id     | projects      | project_id     | 0
+# | project_kanban_steps_kanban_step_id_fkey| kanban_step_id | kanban_steps  | kanban_step_id | 0
+# | project_kanban_steps_project_id_fkey    | project_id     | projects      | project_id     | 0
+# | api_keys_user_id_fkey                   | user_id        | users         | user_id        | 0
 
 # postgres table index list query
 COMMENT='{{ . }} is a index.'

@@ -13,7 +13,8 @@ require (
 	github.com/traefik/yaegi v0.14.2
 	github.com/xo/dburl v0.12.4
 	github.com/yookoala/realpath v1.0.0
-	golang.org/x/tools v0.1.12
+	golang.org/x/exp v0.0.0-20221031165847-c99f073a8326
+	golang.org/x/tools v0.2.0
 	mvdan.cc/gofumpt v0.4.0
 )
 
@@ -34,8 +35,8 @@ require (
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
-	golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
+	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/mod v0.6.0 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 )

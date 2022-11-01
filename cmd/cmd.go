@@ -52,10 +52,11 @@ func NewArgs(name string, names ...string) *Args {
 			Flags: make(map[xo.ContextKey]*xo.Value),
 		},
 		SchemaParams: SchemaParams{
-			FkMode:  xo.NewValue("string", "smart", "foreign key resolution mode", "smart", "parent", "field", "key"),
-			Include: xo.NewValue("glob", "", "include columns"),
-			Exclude: xo.NewValue("glob", "", "exclude columns"),
-			Ignore:  xo.NewValue("glob", "", "ignore columns for inserts/updates"),
+			FkMode:        xo.NewValue("string", "smart", "foreign key resolution mode", "smart", "parent", "field", "key"),
+			Include:       xo.NewValue("glob", "", "include columns"),
+			Exclude:       xo.NewValue("glob", "", "exclude columns"),
+			Ignore:        xo.NewValue("glob", "", "ignore columns for inserts/updates"),
+			MainSchemaPkg: xo.NewValue("string", "", "Go package name containing the schema generation code for shared enums."),
 		},
 	}
 }
@@ -137,6 +138,8 @@ type SchemaParams struct {
 	// Ignore excludes a pattern of columns from inserts and updates,
 	// but can be returned by queries (e.g. *.created_at, *.updated_at)
 	Ignore *xo.Value
+	// MainSchemaPkg determines the package used for enums, etc. if any.
+	MainSchemaPkg *xo.Value
 }
 
 // OutParams are out parameters.
@@ -276,6 +279,7 @@ func SchemaCommand(ctx context.Context, ts *templates.Set, args *Args) (*cobra.C
 	databaseFlags(cmd, args)
 	outFlags(cmd, args)
 	flags.VarP(args.SchemaParams.FkMode, "fk-mode", "k", args.SchemaParams.FkMode.Desc())
+	flags.VarP(args.SchemaParams.MainSchemaPkg, "main-schema-pkg", "", args.SchemaParams.MainSchemaPkg.Desc())
 	flags.VarP(args.SchemaParams.Include, "include", "i", args.SchemaParams.Include.Desc())
 	flags.VarP(args.SchemaParams.Exclude, "exclude", "e", args.SchemaParams.Exclude.Desc())
 	flags.VarP(args.SchemaParams.Ignore, "ignore", "I", args.SchemaParams.Ignore.Desc())

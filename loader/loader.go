@@ -123,10 +123,29 @@ func Enums(ctx context.Context) ([]*models.Enum, error) {
 	if err != nil {
 		return nil, err
 	}
-	if l.Enums != nil {
-		return l.Enums(ctx, db, schema)
+	enums := []*models.Enum{}
+	if schema != "public" {
+		ee, err := l.Enums(ctx, db, "public")
+		if err != nil {
+			return nil, err
+		}
+		for _, e := range ee {
+			e.Schema = "public"
+		}
+		enums = append(enums, ee...)
 	}
-	return nil, nil
+	if l.Enums != nil {
+		ee, err := l.Enums(ctx, db, schema)
+		if err != nil {
+			return nil, err
+		}
+		for _, e := range ee {
+			e.Schema = schema
+		}
+		enums = append(enums, ee...)
+	}
+
+	return enums, nil
 }
 
 // EnumValues returns the database enum values.

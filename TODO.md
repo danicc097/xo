@@ -6,6 +6,12 @@ Relevant forks: https://github.com/sundayfun/xo/commits/master
 - materialized views are just regular tables, we should be able to use
   exactly the same code but tables to use come from selecting using relkind="m"
 
+- dynamic `orderBy UserOrderBy` options struct field if index found for
+  timestamp column. Get appended after any select if present and can be
+  combined:
+  order by updated_at desc, created_at desc,
+ `type UserOrderBy = string , UserCreatedAtDesc UserOrderBy = "UserCreatedAtDesc" `
+
 - if using --schema flag then force user to pass --enums-pkg flag (TODO) to share sqlc's
   enum in multiple packages. import should always be <last> gith.../<last> for
   consistency
