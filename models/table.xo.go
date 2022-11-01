@@ -8,10 +8,11 @@ import (
 
 // Table is a table.
 type Table struct {
-	Type      string `json:"type"`       // type
-	TableName string `json:"table_name"` // table_name
-	ManualPk  bool   `json:"manual_pk"`  // manual_pk
-	ViewDef   string `json:"view_def"`   // view_def
+	Type       string `json:"type"`        // type
+	TableName  string `json:"table_name"`  // table_name
+	ManualPk   bool   `json:"manual_pk"`   // manual_pk
+	ViewDef    string `json:"view_def"`    // view_def
+	MatviewDef string `json:"matview_def"` // matview_def
 }
 
 // PostgresTables runs a custom query, returning results as Table.
@@ -21,21 +22,30 @@ func PostgresTables(ctx context.Context, db DB, schema, typ string) ([]*Table, e
 		`(CASE c.relkind ` +
 		`WHEN 'r' THEN 'table' ` +
 		`WHEN 'v' THEN 'view' ` +
+		`WHEN 'm' THEN 'mat_view' ` +
 		`END), ` + // ::varchar AS type
 		`c.relname, ` + // ::varchar AS table_name
 		`false, ` + // ::boolean AS manual_pk
 		`CASE c.relkind ` +
 		`WHEN 'r' THEN '' ` +
 		`WHEN 'v' THEN v.definition ` +
-		`END AS view_def ` +
+		`WHEN 'm' THEN '' ` +
+		`END AS view_def, ` +
+		`CASE c.relkind ` +
+		`WHEN 'r' THEN '' ` +
+		`WHEN 'v' THEN '' ` +
+		`WHEN 'm' THEN m.definition ` +
+		`END AS matview_def ` +
 		`FROM pg_class c ` +
 		`JOIN ONLY pg_namespace n ON n.oid = c.relnamespace ` +
 		`LEFT JOIN pg_views v ON n.nspname = v.schemaname ` +
 		`AND v.viewname = c.relname ` +
+		`LEFT JOIN pg_matviews m ON n.nspname = m.schemaname ` +
 		`WHERE n.nspname = $1 ` +
 		`AND (CASE c.relkind ` +
 		`WHEN 'r' THEN 'table' ` +
 		`WHEN 'v' THEN 'view' ` +
+		`WHEN 'm' THEN 'mat_view' ` +
 		`END) = LOWER($2)`
 	// run
 	logf(sqlstr, schema, typ)
@@ -49,7 +59,7 @@ func PostgresTables(ctx context.Context, db DB, schema, typ string) ([]*Table, e
 	for rows.Next() {
 		var t Table
 		// scan
-		if err := rows.Scan(&t.Type, &t.TableName, &t.ManualPk, &t.ViewDef); err != nil {
+		if err := rows.Scan(&t.Type, &t.TableName, &t.ManualPk, &t.ViewDef, &t.MatviewDef); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &t)

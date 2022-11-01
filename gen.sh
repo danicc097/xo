@@ -67,7 +67,8 @@ ENDSQL
 COMMENT='{{ . }} is a enum.'
 $XOBIN query "$PGDB" -M -B -2 -T Enum -F PostgresEnums --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
 SELECT
-  DISTINCT t.typname::varchar AS enum_name
+  DISTINCT t.typname::varchar AS enum_name,
+  n.nspname AS schema
 FROM pg_type t
   JOIN ONLY pg_namespace n ON n.oid = t.typnamespace
   JOIN ONLY pg_enum e ON t.oid = e.enumtypid
@@ -159,21 +160,30 @@ SELECT
   (CASE c.relkind
     WHEN 'r' THEN 'table'
     WHEN 'v' THEN 'view'
+    WHEN 'm' THEN 'mat_view'
   END)::varchar AS type,
   c.relname::varchar AS table_name,
   false::boolean AS manual_pk,
   CASE c.relkind
     WHEN 'r' THEN ''
     WHEN 'v' THEN v.definition
-  END AS view_def
+    WHEN 'm' THEN ''
+  END AS view_def,
+  CASE c.relkind
+    WHEN 'r' THEN ''
+    WHEN 'v' THEN ''
+    WHEN 'm' THEN m.definition
+  END AS matview_def
 FROM pg_class c
   JOIN ONLY pg_namespace n ON n.oid = c.relnamespace
   LEFT JOIN pg_views v ON n.nspname = v.schemaname
     AND v.viewname = c.relname
+  LEFT JOIN pg_matviews m ON n.nspname = m.schemaname
 WHERE n.nspname = %%schema string%%
   AND (CASE c.relkind
     WHEN 'r' THEN 'table'
     WHEN 'v' THEN 'view'
+    WHEN 'm' THEN 'mat_view'
   END) = LOWER(%%typ string%%)
 ENDSQL
 

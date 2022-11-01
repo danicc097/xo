@@ -46,12 +46,13 @@ func (q Query) MarshalYAML() (interface{}, error) {
 
 // Schema is a SQL schema.
 type Schema struct {
-	Driver string  `json:"type,omitempty"`
-	Name   string  `json:"name,omitempty"`
-	Enums  []Enum  `json:"enums,omitempty"`
-	Procs  []Proc  `json:"procs,omitempty"`
-	Tables []Table `json:"tables,omitempty"`
-	Views  []Table `json:"views,omitempty"`
+	Driver   string  `json:"type,omitempty"`
+	Name     string  `json:"name,omitempty"`
+	Enums    []Enum  `json:"enums,omitempty"`
+	Procs    []Proc  `json:"procs,omitempty"`
+	Tables   []Table `json:"tables,omitempty"`
+	Views    []Table `json:"views,omitempty"`
+	MatViews []Table `json:"mat_views,omitempty"`
 }
 
 // EnumByName returns a enum by its name.
@@ -92,7 +93,7 @@ func (p Proc) MarshalYAML() (interface{}, error) {
 
 // Table is a table or view.
 type Table struct {
-	Type        string       `json:"type,omitempty"` // 'table' or 'view'
+	Type        string       `json:"type,omitempty"` // 'table' or 'view' or 'mat_view'
 	Name        string       `json:"name,omitempty"`
 	Columns     []Field      `json:"columns,omitempty"`
 	PrimaryKeys []Field      `json:"primary_keys,omitempty"`
