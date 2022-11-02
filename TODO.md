@@ -4,12 +4,7 @@ Relevant forks: https://github.com/sundayfun/xo/commits/master
 - materialized view uses a view -> xo generates all fields as nullable
 (is this intended?)
 
-- dynamic `orderBy UserOrderBy` options struct field if index found for
-  timestamp column (Field.IsDateOrTime). Get appended after any select if present and can be
-  combined:
-  order by updated_at desc, created_at desc,
- `type UserOrderBy = string , UserCreatedAtDesc UserOrderBy = "UserCreatedAtDesc" `
-  with a ``limit *`` struct option appended .
+- joins for o2m, m2m, o2o
 
 - (not that worth it) replicate sqlc enum gen - also a go template, should be trivial to port to xo
   and disable sqlc enum generation with PR

@@ -345,40 +345,57 @@ ENDSQL
 # | public.api_keys         | {public.api_keys}                                  | {users}              | {}                          | {public.users}                            | {users}              | {}
 # |                         |                                                    |                      |                             |                                           |                      |
 
+# TODO TO GET ALL INFO WE NEED:
+# SELECT
+#   (CASE tc.constraint_type
+#     WHEN 'UNIQUE' THEN 'unique'
+#     WHEN 'CHECK' THEN 'check'
+#     WHEN 'PRIMARY KEY' THEN 'primary_key'
+#     WHEN 'FOREIGN KEY' THEN 'foreign_key'
+#   END)::varchar AS key_type,
+#   tc.constraint_name::varchar AS unique_key_name,
+#   tc.table_name as table_name,
+#   kcu.column_name::varchar AS column_name,
+#   ccu.table_name::varchar AS ref_table_name,
+#   ccu.column_name::varchar AS ref_column_name
+# FROM information_schema.table_constraints tc
+#   JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+#     AND tc.table_schema = kcu.table_schema
+#   JOIN (
+#     SELECT
+#       ROW_NUMBER() OVER (
+#         PARTITION BY
+#           table_schema,
+#           table_name,
+#           constraint_name
+#         ORDER BY row_num
+#       ) AS ordinal_position,
+#       table_schema,
+#       table_name,
+#       column_name,
+#       constraint_name
+#     FROM (
+#       SELECT
+#         ROW_NUMBER() OVER (ORDER BY 1) AS row_num,
+#         table_schema,
+#         table_name,
+#         column_name,
+#         constraint_name
+#       FROM information_schema.constraint_column_usage
+#     ) t
+#   ) AS ccu ON ccu.constraint_name = tc.constraint_name
+#     AND ccu.table_schema = tc.table_schema
+#     AND ccu.ordinal_position = kcu.ordinal_position
+# WHERE tc.table_schema = 'public'
+# order by tc.constraint_type
+#   --AND tc.table_name = 'users'
+
 # -------------------------------------------------------
 
 # postgres trigger columns list query
 # COMMENT='{{ . }} represents trigger generated/updated columns.'
 # $XOBIN query "$PGDB" -M -B -2 -T Triggered -F PostgresTableTriggers --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
-# /*
 # TODO get affected rows from source case insens. (new.(.*)\s=)
-# */
-# /*
-# SELECT routines.specific_name,  routine_definition
-# FROM information_schema.routines
-#     LEFT JOIN information_schema.parameters ON routines.specific_name=parameters.specific_name
-# WHERE routines.specific_schema='public'
-# ORDER BY routines.routine_name, parameters.ordinal_position;
-# */
-
-# /*
-# SELECT format('%I.%I(%s)', ns.nspname, p.proname, oidvectortypes(p.proargtypes)), *
-# FROM pg_proc p INNER JOIN pg_namespace ns ON (p.pronamespace = ns.oid)
-# WHERE ns.nspname = 'public';*/
-
-# /*SELECT
-#     n.nspname AS function_schema,
-#     p.proname AS function_name,
-#     p.prosrc as source,
-# FROM
-#     pg_proc p
-#     LEFT JOIN pg_namespace n ON p.pronamespace = n.oid
-# WHERE
-#     n.nspname NOT IN ('pg_catalog', 'information_schema')
-# ORDER BY
-#     function_schema,
-#     function_name;*/
-
 # -- get trigger name per schema and table (we get source but its EXECUTE ...)
 # /*select event_object_schema as table_schema,
 #        event_object_table as table_name,
@@ -394,6 +411,17 @@ ENDSQL
 #          table_name;*/
 # ENDSQL
 
+# // TODO start with tc.constraint_type = 'FOREIGN KEY' query
+# then we a bunch of rows, e.g. ref_column_name is team_id, fk name 'user_team_pkey' -->
+# find origin table where pk is team_id:
+#   tc.constraint_type = 'PRIMARY KEY'
+# and ccu.column_name = 'team_id' (previous query's ccu.column_name)
+# and tc.constraint_name != 'user_team_pkey' (previous query's tc.constraint_name)
+# | foreign_key_name| table_name| column_name| ref_table_name| ref_column_name| key_id
+# | ----------------| ----------| -----------| --------------| ---------------| ------
+# | teams_pkey      | teams     | team_id    | teams         | team_id        | 0
+# so we join on teams (by team_id) for every row returned from the other join with user_team (by user_id).
+# if result count from pk query is > 1 do another subjoin again
 # postgres table foreign key list query
 COMMENT='{{ . }} is a foreign key.'
 $XOBIN query "$PGDB" -M -B -2 -T ForeignKey -F PostgresTableForeignKeys --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
