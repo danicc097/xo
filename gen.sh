@@ -345,9 +345,10 @@ ENDSQL
 # | public.api_keys         | {public.api_keys}                                  | {users}              | {}                          | {public.users}                            | {users}              | {}
 # |                         |                                                    |                      |                             |                                           |                      |
 
-# TODO TO GET ALL INFO WE NEED:
+# + check comment /cardinality:(.*),/ and exit if found cardinality not in (O2M,M2M,O2O)
+# TODO TO GET ALL INFO WE NEED: (including comments, to be parsed when we cant infer relationships)
 # SELECT
-#   (CASE tc.constraint_type
+#   distinct (CASE tc.constraint_type
 #     WHEN 'UNIQUE' THEN 'unique'
 #     WHEN 'CHECK' THEN 'check'
 #     WHEN 'PRIMARY KEY' THEN 'primary_key'
@@ -356,11 +357,14 @@ ENDSQL
 #   tc.constraint_name::varchar AS unique_key_name,
 #   tc.table_name as table_name,
 #   kcu.column_name::varchar AS column_name,
+#   obj_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, 'pg_class') as table_comment,
+#   col_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, c.ordinal_position) as column_comment,
 #   ccu.table_name::varchar AS ref_table_name,
 #   ccu.column_name::varchar AS ref_column_name
 # FROM information_schema.table_constraints tc
 #   JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
 #     AND tc.table_schema = kcu.table_schema
+#   join information_schema.columns as c on tc.table_name = c.table_name and c.column_name = kcu.column_name
 #   JOIN (
 #     SELECT
 #       ROW_NUMBER() OVER (
@@ -387,7 +391,6 @@ ENDSQL
 #     AND ccu.table_schema = tc.table_schema
 #     AND ccu.ordinal_position = kcu.ordinal_position
 # WHERE tc.table_schema = 'public'
-# order by tc.constraint_type
 #   --AND tc.table_name = 'users'
 
 # -------------------------------------------------------
