@@ -253,35 +253,6 @@ ENDSQL
 
 # to discover specific relation types (o2m, m2m, o2o) maybe checkout `ent`
 
-# ()
-# select
-#   users.*,
-# -- if joinOrgs is false all we do is a scan of users (see explain analyze).
-#   (case when :joinOrgs = true then joined_projects.projects end) as projects
-# from
-#   users
-#   join (
-#     select
-#       user_id
-#       , ARRAY_AGG(projects.*) as projects
-#     from
-#       user_project uo
-#       join projects using (project_id)
-#     where
-#       user_id in (
-#         select
-#           user_id
-#         from
-#           user_project
-#         where
-#           project_id = any (
-#             select
-#               project_id
-#             from
-#               projects))
-#         group by
-#           user_id) joined_projects using (user_id);
-
 # viewing pk used as foreign keys:
 # SELECT
 #     tc.table_schema,
