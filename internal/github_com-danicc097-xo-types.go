@@ -23,6 +23,7 @@ func init() {
 		"SingleKey":      reflect.ValueOf(types.SingleKey),
 
 		// type definitions
+		"Constraint":   reflect.ValueOf((*types.Constraint)(nil)),
 		"ContextKey":   reflect.ValueOf((*types.ContextKey)(nil)),
 		"Enum":         reflect.ValueOf((*types.Enum)(nil)),
 		"Field":        reflect.ValueOf((*types.Field)(nil)),

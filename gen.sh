@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #
-# Usage: bash gen.sh ./models/
+# Prerequisites: go install github.com/traefik/yaegi/cmd/yaegi
+# Usage: bash gen.sh ./models/ && go generate ./...
 #
 
 set -a

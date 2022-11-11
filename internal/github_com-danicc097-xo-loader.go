@@ -10,6 +10,7 @@ import (
 func init() {
 	Symbols["github.com/danicc097/xo/loader/loader"] = map[string]reflect.Value{
 		// function, constant and variable definitions
+		"Constraints":          reflect.ValueOf(loader.Constraints),
 		"EnumValues":           reflect.ValueOf(loader.EnumValues),
 		"Enums":                reflect.ValueOf(loader.Enums),
 		"Flags":                reflect.ValueOf(loader.Flags),
@@ -28,6 +29,7 @@ func init() {
 		"StdlibPostgresGoType": reflect.ValueOf(loader.StdlibPostgresGoType),
 		"TableColumns":         reflect.ValueOf(loader.TableColumns),
 		"TableForeignKeys":     reflect.ValueOf(loader.TableForeignKeys),
+		"TableGenerations":     reflect.ValueOf(loader.TableGenerations),
 		"TableIndexes":         reflect.ValueOf(loader.TableIndexes),
 		"TableSequences":       reflect.ValueOf(loader.TableSequences),
 		"Tables":               reflect.ValueOf(loader.Tables),

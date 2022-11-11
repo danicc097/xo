@@ -10,7 +10,7 @@ require (
 	github.com/kenshaw/snaker v0.2.0
 	github.com/lib/pq v1.10.7
 	github.com/spf13/cobra v1.6.0
-	github.com/traefik/yaegi v0.14.2
+	github.com/traefik/yaegi v0.14.3
 	github.com/xo/dburl v0.12.4
 	github.com/yookoala/realpath v1.0.0
 	golang.org/x/exp v0.0.0-20221031165847-c99f073a8326

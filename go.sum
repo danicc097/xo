@@ -82,6 +82,8 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/traefik/yaegi v0.14.2 h1:9t9xepIfar6BrYdwJHGc+XRKo6qFoJCl6Z46N3hUtUw=
 github.com/traefik/yaegi v0.14.2/go.mod h1:AVRxhaI2G+nUsaM1zyktzwXn69G3t/AuTDrCiTds9p0=
+github.com/traefik/yaegi v0.14.3 h1:LqA0k8DKwvRMc+msfQjNusphHJc+r6WC5tZU5TmUFOM=
+github.com/traefik/yaegi v0.14.3/go.mod h1:AVRxhaI2G+nUsaM1zyktzwXn69G3t/AuTDrCiTds9p0=
 github.com/xo/dburl v0.12.4 h1:mAIQjCNqCRtfytZNN0tZzK01rfng3n4Ei1s+H9lh61I=
 github.com/xo/dburl v0.12.4/go.mod h1:K6rSPgbVqP3ZFT0RHkdg/M3M5KhLeV2MaS/ZqaLd1kA=
 github.com/yookoala/realpath v1.0.0 h1:7OA9pj4FZd+oZDsyvXWQvjn5oBdcHRTV44PpdMSuImQ=
