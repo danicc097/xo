@@ -241,6 +241,55 @@ ENDSQL
 
 # -------------------------------------------------------
 
+# postgres proc list query
+COMMENT='{{ . }} represents all constraints in a schema.'
+$XOBIN query "$PGDB" -M -B -2 -T Constraint -F PostgresConstraints --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
+SELECT
+  distinct (CASE tc.constraint_type
+    WHEN 'UNIQUE' THEN 'unique'
+    WHEN 'CHECK' THEN 'check'
+    WHEN 'PRIMARY KEY' THEN 'primary_key'
+    WHEN 'FOREIGN KEY' THEN 'foreign_key'
+  END)::varchar AS key_type,
+  tc.constraint_name::varchar AS unique_key_name,
+  tc.table_name as table_name,
+  kcu.column_name::varchar AS column_name,
+  COALESCE(obj_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, 'pg_class'), '') as table_comment,
+  COALESCE(col_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, c.ordinal_position), '') as column_comment,
+  ccu.table_name::varchar AS ref_table_name,
+  ccu.column_name::varchar AS ref_column_name
+FROM information_schema.table_constraints tc
+  JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+    AND tc.table_schema = kcu.table_schema
+  join information_schema.columns as c on tc.table_name = c.table_name and c.column_name = kcu.column_name
+  JOIN (
+    SELECT
+      ROW_NUMBER() OVER (
+        PARTITION BY
+          table_schema,
+          table_name,
+          constraint_name
+        ORDER BY row_num
+      ) AS ordinal_position,
+      table_schema,
+      table_name,
+      column_name,
+      constraint_name
+    FROM (
+      SELECT
+        ROW_NUMBER() OVER (ORDER BY 1) AS row_num,
+        table_schema,
+        table_name,
+        column_name,
+        constraint_name
+      FROM information_schema.constraint_column_usage
+    ) t
+  ) AS ccu ON ccu.constraint_name = tc.constraint_name
+    AND ccu.table_schema = tc.table_schema
+    AND ccu.ordinal_position = kcu.ordinal_position
+WHERE tc.table_schema = %%schema string%%
+ENDSQL
+
 # TODO discover foreign keys in other tables for the current pk pk1:
 # and allow for optional join with discovered lookup tables and return json_agg of the recursively joined fks
 # example:
@@ -317,52 +366,6 @@ ENDSQL
 # |                         |                                                    |                      |                             |                                           |                      |
 
 # + check comment /cardinality:(.*),/ and exit if found cardinality not in (O2M,M2M,O2O)
-# TODO TO GET ALL INFO WE NEED: (including comments, to be parsed when we cant infer relationships)
-# SELECT
-#   distinct (CASE tc.constraint_type
-#     WHEN 'UNIQUE' THEN 'unique'
-#     WHEN 'CHECK' THEN 'check'
-#     WHEN 'PRIMARY KEY' THEN 'primary_key'
-#     WHEN 'FOREIGN KEY' THEN 'foreign_key'
-#   END)::varchar AS key_type,
-#   tc.constraint_name::varchar AS unique_key_name,
-#   tc.table_name as table_name,
-#   kcu.column_name::varchar AS column_name,
-#   obj_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, 'pg_class') as table_comment,
-#   col_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, c.ordinal_position) as column_comment,
-#   ccu.table_name::varchar AS ref_table_name,
-#   ccu.column_name::varchar AS ref_column_name
-# FROM information_schema.table_constraints tc
-#   JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
-#     AND tc.table_schema = kcu.table_schema
-#   join information_schema.columns as c on tc.table_name = c.table_name and c.column_name = kcu.column_name
-#   JOIN (
-#     SELECT
-#       ROW_NUMBER() OVER (
-#         PARTITION BY
-#           table_schema,
-#           table_name,
-#           constraint_name
-#         ORDER BY row_num
-#       ) AS ordinal_position,
-#       table_schema,
-#       table_name,
-#       column_name,
-#       constraint_name
-#     FROM (
-#       SELECT
-#         ROW_NUMBER() OVER (ORDER BY 1) AS row_num,
-#         table_schema,
-#         table_name,
-#         column_name,
-#         constraint_name
-#       FROM information_schema.constraint_column_usage
-#     ) t
-#   ) AS ccu ON ccu.constraint_name = tc.constraint_name
-#     AND ccu.table_schema = tc.table_schema
-#     AND ccu.ordinal_position = kcu.ordinal_position
-# WHERE tc.table_schema = 'public'
-#   --AND tc.table_name = 'users'
 
 # -------------------------------------------------------
 

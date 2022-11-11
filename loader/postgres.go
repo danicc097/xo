@@ -19,6 +19,7 @@ func init() {
 		Enums:            models.PostgresEnums,
 		EnumValues:       models.PostgresEnumValues,
 		Procs:            models.PostgresProcs,
+		Constraints:      models.PostgresConstraints,
 		ProcParams:       models.PostgresProcParams,
 		Tables:           models.PostgresTables,
 		TableColumns:     PostgresTableColumns,

@@ -46,13 +46,14 @@ func (q Query) MarshalYAML() (interface{}, error) {
 
 // Schema is a SQL schema.
 type Schema struct {
-	Driver   string  `json:"type,omitempty"`
-	Name     string  `json:"name,omitempty"`
-	Enums    []Enum  `json:"enums,omitempty"`
-	Procs    []Proc  `json:"procs,omitempty"`
-	Tables   []Table `json:"tables,omitempty"`
-	Views    []Table `json:"views,omitempty"`
-	MatViews []Table `json:"mat_views,omitempty"`
+	Driver      string       `json:"type,omitempty"`
+	Name        string       `json:"name,omitempty"`
+	Enums       []Enum       `json:"enums,omitempty"`
+	Constraints []Constraint `json:"constraints,omitempty"`
+	Procs       []Proc       `json:"procs,omitempty"`
+	Tables      []Table      `json:"tables,omitempty"`
+	Views       []Table      `json:"views,omitempty"`
+	MatViews    []Table      `json:"mat_views,omitempty"`
 }
 
 // EnumByName returns a enum by its name.
@@ -89,6 +90,20 @@ func (p Proc) MarshalYAML() (interface{}, error) {
 	v := p
 	v.Definition = forceLineEnd(v.Definition)
 	return reflectStruct(v)
+}
+
+// Constraint is a table constraint.
+type Constraint struct {
+	// "unique" "check" "primary_key" "foreign_key"
+	Type string `json:"key_type"`
+	// "M2M" "O2M" "M2O" "O2O"
+	Cardinality string `json:"cardinality"`
+	// Key name
+	Name          string `json:"name,omitempty"`
+	TableName     string `json:"table_name"`
+	ColumnName    string `json:"column_name"`
+	RefTableName  string `json:"ref_table_name"`
+	RefColumnName string `json:"ref_column_name"`
 }
 
 // Table is a table or view.

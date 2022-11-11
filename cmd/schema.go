@@ -24,21 +24,22 @@ func LoadSchema(ctx context.Context, set *xo.Set, args *Args) error {
 		Name:   schemaName,
 	}
 	var err error
-	// load enums, procs, tables, views
-	enums, err := LoadEnums(ctx, args)
-	if err != nil {
+	if schema.Constraints, err = LoadConstraints(ctx, args); err != nil {
+		return err
+	}
+	if schema.Enums, err = LoadEnums(ctx, args); err != nil {
 		return err
 	}
 	if schema.Procs, err = LoadProcs(ctx, args); err != nil {
 		return err
 	}
-	if schema.Tables, err = LoadTables(ctx, args, "table", enums); err != nil {
+	if schema.Tables, err = LoadTables(ctx, args, "table", schema.Enums); err != nil {
 		return err
 	}
-	if schema.Views, err = LoadTables(ctx, args, "view", enums); err != nil {
+	if schema.Views, err = LoadTables(ctx, args, "view", schema.Enums); err != nil {
 		return err
 	}
-	if schema.MatViews, err = LoadTables(ctx, args, "mat_view", enums); err != nil {
+	if schema.MatViews, err = LoadTables(ctx, args, "mat_view", schema.Enums); err != nil {
 		return err
 	}
 	// emit
@@ -178,6 +179,43 @@ func LoadProcParams(ctx context.Context, args *Args, proc *xo.Proc) error {
 		})
 	}
 	return nil
+}
+
+var cardinalityRE = regexp.MustCompile("cardinality:([A-Za-z0-9_-]*)")
+
+// LoadConstraints loads constraints for all tables in a schema.
+func LoadConstraints(ctx context.Context, args *Args) ([]xo.Constraint, error) {
+	lcc, err := loader.Constraints(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var constraints []xo.Constraint
+	allowedCardinalities := []string{"O2M", "M2O", "M2M", "O2O"}
+	for _, lc := range lcc {
+		var cardinality string
+		cards := cardinalityRE.FindStringSubmatch(lc.ColumnComment)
+		if len(cards) > 0 && lc.KeyType != "primary_key" {
+			cardinality = strings.ToUpper(cards[1])
+			if !slices.Contains(allowedCardinalities, cardinality) {
+				return nil, fmt.Errorf("invalid cardinality: %s", cardinality)
+			}
+		}
+		c := xo.Constraint{
+			Type:          lc.KeyType,
+			Name:          lc.UniqueKeyName,
+			TableName:     lc.TableName,
+			RefTableName:  lc.RefTableName,
+			ColumnName:    lc.ColumnName,
+			RefColumnName: lc.RefColumnName,
+			Cardinality:   cardinality,
+		}
+		if c.Cardinality != "" {
+			fmt.Printf("[%s] %s <- %s: %v\n", c.Type, c.TableName+"."+c.ColumnName, c.RefTableName+"."+c.RefColumnName, c.Cardinality)
+		}
+		constraints = append(constraints, c)
+	}
+
+	return constraints, nil
 }
 
 // LoadTables loads types for the type (table, view)

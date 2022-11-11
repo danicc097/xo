@@ -59,6 +59,7 @@ type Loader struct {
 	Enums            func(context.Context, models.DB, string) ([]*models.Enum, error)
 	EnumValues       func(context.Context, models.DB, string, string) ([]*models.EnumValue, error)
 	Procs            func(context.Context, models.DB, string) ([]*models.Proc, error)
+	Constraints      func(context.Context, models.DB, string) ([]*models.Constraint, error)
 	ProcParams       func(context.Context, models.DB, string, string) ([]*models.ProcParam, error)
 	Tables           func(context.Context, models.DB, string, string) ([]*models.Table, error)
 	TableColumns     func(context.Context, models.DB, string, string) ([]*models.Column, error)
@@ -165,6 +166,18 @@ func Procs(ctx context.Context) ([]*models.Proc, error) {
 	}
 	if l.Procs != nil {
 		return l.Procs(ctx, db, schema)
+	}
+	return nil, nil
+}
+
+// Constraints returns the database procs.
+func Constraints(ctx context.Context) ([]*models.Constraint, error) {
+	db, l, schema, err := get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if l.Constraints != nil {
+		return l.Constraints(ctx, db, schema)
 	}
 	return nil, nil
 }
