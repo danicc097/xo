@@ -117,42 +117,43 @@ func PostgresGoType(d xo.Type, schema, itype string) (string, string, error) {
 	case "boolean":
 		goType, zero = "bool", "false"
 		if typNullable {
-			goType, zero = "null.Bool", "null.Bool{}"
+			goType, zero = "*bool", "nil"
 		}
 	case "bpchar", "character varying", "character", "inet", "money", "text", "name":
 		goType, zero = "string", `""`
 		if typNullable {
-			goType, zero = "null.String", "null.String{}"
+			goType, zero = "*string", "nil"
 		}
 	case "smallint":
 		goType, zero = "int16", "0"
 		if typNullable {
-			goType, zero = "null.Int", "null.Int{}"
+			goType, zero = "*int16", "nil"
 		}
 	case "integer":
 		goType, zero = itype, "0"
 		if typNullable {
-			goType, zero = "null.Int", "null.Int{}"
+			goType, zero = "*int64", "nil"
 		}
 	case "bigint":
 		goType, zero = "int64", "0"
 		if typNullable {
-			goType, zero = "null.Int", "null.Int{}"
+			goType, zero = "*int64", "nil"
 		}
 	case "real":
 		goType, zero = "float32", "0.0"
 		if typNullable {
-			goType, zero = "null.Float", "null.Float{}"
+			goType, zero = "*float32", "nil"
 		}
 	case "double precision", "numeric":
 		goType, zero = "float64", "0.0"
 		if typNullable {
-			goType, zero = "null.Float", "null.Float{}"
+			goType, zero = "*float64", "nil"
 		}
+		// TODO pgtypes for EACH different ttyype in this case
 	case "date", "timestamp with time zone", "time with time zone", "time without time zone", "timestamp without time zone":
-		goType, zero = "time.Time", "time.Time{}"
+		goType, zero = "time.Time", "nil"
 		if typNullable {
-			goType, zero = "null.Time", "null.Time{}"
+			goType, zero = "*time.Time", "nil"
 		}
 	case "bit":
 		goType, zero = "uint8", "0"
@@ -171,7 +172,7 @@ func PostgresGoType(d xo.Type, schema, itype string) (string, string, error) {
 	case "uuid":
 		goType, zero = "uuid.UUID", "uuid.UUID{}"
 		if typNullable {
-			goType, zero = "uuid.NullUUID", "uuid.NullUUID{}"
+			goType, zero = "*uuid.UUID", "nil"
 		}
 	default:
 		goType, zero = schemaType(d.Type, typNullable, schema)
