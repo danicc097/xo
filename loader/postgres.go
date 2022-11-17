@@ -132,7 +132,7 @@ func PostgresGoType(d xo.Type, schema, itype string) (string, string, error) {
 	case "integer":
 		goType, zero = itype, "0"
 		if typNullable {
-			goType, zero = "*int64", "nil"
+			goType, zero = "*int", "nil"
 		}
 	case "bigint":
 		goType, zero = "int64", "0"
