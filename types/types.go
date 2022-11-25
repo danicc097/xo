@@ -158,6 +158,7 @@ type Field struct {
 	Interpolate  bool   `json:"interpolate,omitempty"`
 	Join         bool   `json:"join,omitempty"`
 	IsDateOrTime bool   `json:"is_date_or_time,omitempty"`
+	Properties   string `json:"properties,omitempty"`
 }
 
 // Type holds information for a database type.

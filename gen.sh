@@ -4,6 +4,8 @@
 # Prerequisites: go install github.com/traefik/yaegi/cmd/yaegi
 # Usage: bash gen.sh ./models/ && go generate ./...
 #
+# If models are wrongly generated and xo gets built: revert changes, build again (else XOBIN will never generate back)
+#
 
 set -a
 source .env
@@ -189,19 +191,21 @@ WHERE n.nspname = %%schema string%%
 ENDSQL
 
 # postgres table column list query
-FIELDS='FieldOrdinal int,ColumnName string,DataType string,NotNull bool,DefaultValue sql.NullString,IsPrimaryKey bool'
+FIELDS='FieldOrdinal int,ColumnName string,DataType string,NotNull bool,DefaultValue sql.NullString,IsPrimaryKey bool,ColumnComment string'
 COMMENT='{{ . }} is a column.'
 $XOBIN query "$PGDB" -M -B -2 -T Column -F PostgresTableColumns -Z "$FIELDS" --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
-SELECT
+SELECT DISTINCT
   a.attnum::integer AS field_ordinal,
   a.attname::varchar AS column_name,
   format_type(a.atttypid, a.atttypmod)::varchar AS data_type,
   a.attnotnull::boolean AS not_null,
   COALESCE(pg_get_expr(ad.adbin, ad.adrelid), '')::varchar AS default_value,
-  COALESCE(ct.contype = 'p', false)::boolean AS is_primary_key
+  COALESCE(ct.contype = 'p', false)::boolean AS is_primary_key,
+  COALESCE(col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position), '') as column_comment
 FROM pg_attribute a
   JOIN ONLY pg_class c ON c.oid = a.attrelid
   JOIN ONLY pg_namespace n ON n.oid = c.relnamespace
+  INNER JOIN information_schema.columns as isc on c.relname = isc.table_name and isc.column_name = a.attname
   LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid
     AND a.attnum = ANY(ct.conkey)
     AND ct.contype = 'p'
@@ -211,7 +215,7 @@ WHERE a.attisdropped = false
   AND n.nspname = %%schema string%%
   AND c.relname = %%table string%%
   AND (%%sys bool%% OR a.attnum > 0)
-ORDER BY a.attnum
+ORDER BY field_ordinal
 ENDSQL
 
 # postgres sequence list query

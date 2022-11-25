@@ -181,7 +181,10 @@ func LoadProcParams(ctx context.Context, args *Args, proc *xo.Proc) error {
 	return nil
 }
 
-var cardinalityRE = regexp.MustCompile("cardinality:([A-Za-z0-9_-]*)")
+var (
+	cardinalityRE = regexp.MustCompile("cardinality:([A-Za-z0-9_-]*)")
+	propertiesRE  = regexp.MustCompile("property:([A-Za-z0-9_-]*)")
+)
 
 // LoadConstraints loads constraints for all tables in a schema.
 func LoadConstraints(ctx context.Context, args *Args) ([]xo.Constraint, error) {
@@ -309,6 +312,15 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table, enums []xo.En
 			d.Enum = &enums[idx]
 		}
 		dateTimeTypes := []string{"date", "timestamp with time zone", "time with time zone", "time without time zone", "timestamp without time zone"}
+
+		var properties []string
+		props := propertiesRE.FindAllStringSubmatch(c.ColumnComment, -1)
+		if len(props) > 0 {
+			for _, p := range props {
+				properties = append(properties, strings.ToLower(p[1]))
+			}
+		}
+
 		col := xo.Field{
 			Name:         c.ColumnName,
 			Type:         d,
@@ -318,6 +330,7 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table, enums []xo.En
 			IsGenerated:  genMap[c.ColumnName],
 			IsIgnored:    isIgnored(args, table.Name, c.ColumnName),
 			IsDateOrTime: slices.Contains(dateTimeTypes, d.Type),
+			Properties:   strings.Join(properties, "|"), // createdb requires comparable fields
 		}
 		table.Columns = append(table.Columns, col)
 		if col.IsPrimary {
