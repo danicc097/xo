@@ -42,7 +42,7 @@ func PostgresTableColumns(ctx context.Context, db DB, schema, table string, sys 
 		`AND n.nspname = $1 ` +
 		`AND c.relname = $2 ` +
 		`AND ($3 OR a.attnum > 0) ` +
-		`ORDER BY field_ordinal`
+		`ORDER BY a.attnum`
 	// run
 	logf(sqlstr, schema, table, sys)
 	rows, err := db.QueryContext(ctx, sqlstr, schema, table, sys)

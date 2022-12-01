@@ -215,7 +215,7 @@ WHERE a.attisdropped = false
   AND n.nspname = %%schema string%%
   AND c.relname = %%table string%%
   AND (%%sys bool%% OR a.attnum > 0)
-ORDER BY field_ordinal
+ORDER BY a.attnum
 ENDSQL
 
 # postgres sequence list query
