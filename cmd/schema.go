@@ -197,7 +197,7 @@ func LoadConstraints(ctx context.Context, args *Args) ([]xo.Constraint, error) {
 	for _, lc := range lcc {
 		var cardinality string
 		cards := cardinalityRE.FindStringSubmatch(lc.ColumnComment)
-		if len(cards) > 0 && lc.KeyType != "primary_key" {
+		if len(cards) > 0 {
 			cardinality = strings.ToUpper(cards[1])
 			if !slices.Contains(allowedCardinalities, cardinality) {
 				return nil, fmt.Errorf("invalid cardinality: %s", cardinality)
