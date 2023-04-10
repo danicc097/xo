@@ -17,6 +17,7 @@ func init() {
 		"CommandContext": reflect.ValueOf(exec.CommandContext),
 		"ErrDot":         reflect.ValueOf(&exec.ErrDot).Elem(),
 		"ErrNotFound":    reflect.ValueOf(&exec.ErrNotFound).Elem(),
+		"ErrWaitDelay":   reflect.ValueOf(&exec.ErrWaitDelay).Elem(),
 		"LookPath":       reflect.ValueOf(exec.LookPath),
 
 		// type definitions

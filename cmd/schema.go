@@ -184,6 +184,7 @@ func LoadProcParams(ctx context.Context, args *Args, proc *xo.Proc) error {
 var (
 	cardinalityRE = regexp.MustCompile("cardinality:([A-Za-z0-9_-]*)")
 	propertiesRE  = regexp.MustCompile("property:([A-Za-z0-9_-]*)")
+	typeRE        = regexp.MustCompile("type:([\\.A-Za-z0-9_-]*)")
 )
 
 // LoadConstraints loads constraints for all tables in a schema.
@@ -321,9 +322,16 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table, enums []xo.En
 			}
 		}
 
+		var typeOverride string
+		match := typeRE.FindStringSubmatch(c.ColumnComment)
+		if len(match) > 0 {
+			typeOverride = match[1]
+		}
+
 		col := xo.Field{
 			Name:         c.ColumnName,
 			Type:         d,
+			TypeOverride: typeOverride,
 			Default:      defaultValue,
 			IsPrimary:    c.IsPrimaryKey,
 			IsSequence:   sqMap[c.ColumnName],
