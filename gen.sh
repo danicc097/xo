@@ -4,6 +4,8 @@
 # Prerequisites: go install github.com/traefik/yaegi/cmd/yaegi
 # Usage: bash gen.sh ./models/ && go generate ./...
 #
+# go build -o xo .
+#
 # If models are wrongly generated and xo gets built: revert changes, build again (else XOBIN will never generate back)
 #
 

@@ -74,8 +74,8 @@ func PQPostgresGoType(d xo.Type, schema, itype, _ string) (string, string, error
 		return "", "", err
 	}
 	if d.IsArray {
-		goType, zero = "[]any", "[]any{}" // is of type struct { A any }; can't be nil
 		arrType, ok := pgxArrMapping[goType]
+		goType, zero = "[]any", "[]any{}" // is of type struct { A any }; can't be nil
 		if ok {
 			goType, zero = arrType, "nil"
 		}

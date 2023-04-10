@@ -15,6 +15,8 @@ Features over original `xo`:
  generates a
  `... WHERE user_id = $1 AND external_id = $2 AND (external_id IS NOT NULL)`
  query.
+ 
+For advanced templating examples, see: https://github.com/danicc097/openapi-go-gin-postgres-sqlc
 
 Features (WIP): see [TODOs](./TODO.md)
 
