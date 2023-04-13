@@ -286,6 +286,7 @@ func (ts *Set) Process(ctx context.Context, outDir string, mode string, set *xo.
 	sort.Slice(filenames, func(i, j int) bool {
 		return filenames[i] < filenames[j]
 	})
+
 	// Generate all files with the constructed template.
 	for _, file := range filenames {
 		emitted := ts.files[file]
@@ -299,6 +300,13 @@ func (ts *Set) Process(ctx context.Context, outDir string, mode string, set *xo.
 			return emitted.Template[i].SortName < emitted.Template[j].SortName
 		})
 		for _, tpl := range emitted.Template {
+			// f, err := os.Create("/tmp/xo-profile-" + tpl.Dest + ".pprof")
+			// if err != nil {
+			// 	log.Fatal(err)
+			// }
+			// pprof.StartCPUProfile(f)
+			// defer pprof.StopCPUProfile()
+
 			if tpl.Src == "" {
 				err := ts.goTpl.ExecuteTemplate(&emitted.Buf, tpl.Partial, tpl)
 				if err != nil {
