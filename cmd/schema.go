@@ -214,7 +214,15 @@ func LoadConstraints(ctx context.Context, args *Args) ([]xo.Constraint, error) {
 			Cardinality:   cardinality,
 		}
 		if c.Cardinality != "" {
-			fmt.Printf("[%s] %s <- %s: %v\n", c.Type, c.TableName+"."+c.ColumnName, c.RefTableName+"."+c.RefColumnName, c.Cardinality)
+			switch c.Type {
+			case "foreign_key":
+				fmt.Printf("%-48s | %-12s | %s | %-45s <- %s\n", c.Name, c.Type, c.Cardinality, c.TableName+"."+c.ColumnName, c.RefTableName+"."+c.RefColumnName)
+			case "primary_key":
+				// may be O2O (PK is FK) or M2M (PKs on lookup table)
+				fmt.Printf("%-48s | %-12s | %s | %-45s <- %s\n", c.Name, c.Type, c.Cardinality, c.TableName+"."+c.ColumnName, c.RefTableName+"."+c.RefColumnName)
+			case "unique":
+				fmt.Printf("%-48s | %-12s | %s | %s \n", c.Name, c.Type, c.Cardinality, c.RefTableName+"."+c.RefColumnName)
+			}
 		}
 		constraints = append(constraints, c)
 	}
