@@ -181,12 +181,6 @@ func LoadProcParams(ctx context.Context, args *Args, proc *xo.Proc) error {
 	return nil
 }
 
-var (
-	cardinalityRE = regexp.MustCompile("cardinality:([A-Za-z0-9_-]*)")
-	propertiesRE  = regexp.MustCompile("property:([A-Za-z0-9_-]*)")
-	typeRE        = regexp.MustCompile("type:([\\.A-Za-z0-9_-]*)")
-)
-
 // LoadConstraints loads constraints for all tables in a schema.
 func LoadConstraints(ctx context.Context, args *Args) ([]xo.Constraint, error) {
 	lcc, err := loader.Constraints(ctx)
@@ -194,16 +188,7 @@ func LoadConstraints(ctx context.Context, args *Args) ([]xo.Constraint, error) {
 		return nil, err
 	}
 	var constraints []xo.Constraint
-	allowedCardinalities := []string{"O2M", "M2O", "M2M", "O2O"}
 	for _, lc := range lcc {
-		var cardinality string
-		cards := cardinalityRE.FindStringSubmatch(lc.ColumnComment)
-		if len(cards) > 0 {
-			cardinality = strings.ToUpper(cards[1])
-			if !slices.Contains(allowedCardinalities, cardinality) {
-				return nil, fmt.Errorf("invalid cardinality: %s", cardinality)
-			}
-		}
 		c := xo.Constraint{
 			Type:          lc.KeyType,
 			Name:          lc.UniqueKeyName,
@@ -211,18 +196,7 @@ func LoadConstraints(ctx context.Context, args *Args) ([]xo.Constraint, error) {
 			RefTableName:  lc.RefTableName,
 			ColumnName:    lc.ColumnName,
 			RefColumnName: lc.RefColumnName,
-			Cardinality:   cardinality,
-		}
-		if c.Cardinality != "" {
-			switch c.Type {
-			case "foreign_key":
-				fmt.Printf("%-48s | %-12s | %s | %-45s <- %s\n", c.Name, c.Type, c.Cardinality, c.TableName+"."+c.ColumnName, c.RefTableName+"."+c.RefColumnName)
-			case "primary_key":
-				// may be O2O (PK is FK) or M2M (PKs on lookup table)
-				fmt.Printf("%-48s | %-12s | %s | %-45s <- %s\n", c.Name, c.Type, c.Cardinality, c.TableName+"."+c.ColumnName, c.RefTableName+"."+c.RefColumnName)
-			case "unique":
-				fmt.Printf("%-48s | %-12s | %s | %s \n", c.Name, c.Type, c.Cardinality, c.RefTableName+"."+c.RefColumnName)
-			}
+			Comment:       lc.ColumnComment,
 		}
 		constraints = append(constraints, c)
 	}
@@ -322,31 +296,16 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table, enums []xo.En
 		}
 		dateTimeTypes := []string{"date", "timestamp with time zone", "time with time zone", "time without time zone", "timestamp without time zone"}
 
-		var properties []string
-		props := propertiesRE.FindAllStringSubmatch(c.ColumnComment, -1)
-		if len(props) > 0 {
-			for _, p := range props {
-				properties = append(properties, strings.ToLower(p[1]))
-			}
-		}
-
-		var typeOverride string
-		match := typeRE.FindStringSubmatch(c.ColumnComment)
-		if len(match) > 0 {
-			typeOverride = match[1]
-		}
-
 		col := xo.Field{
 			Name:         c.ColumnName,
 			Type:         d,
-			TypeOverride: typeOverride,
 			Default:      defaultValue,
 			IsPrimary:    c.IsPrimaryKey,
 			IsSequence:   sqMap[c.ColumnName],
 			IsGenerated:  genMap[c.ColumnName],
 			IsIgnored:    isIgnored(args, table.Name, c.ColumnName),
 			IsDateOrTime: slices.Contains(dateTimeTypes, d.Type),
-			Properties:   strings.Join(properties, "|"), // createdb requires comparable fields
+			Comment:      c.ColumnComment,
 		}
 		table.Columns = append(table.Columns, col)
 		if col.IsPrimary {
