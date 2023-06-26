@@ -15,7 +15,7 @@ Features over original `xo`:
  generates a
  `... WHERE user_id = $1 AND external_id = $2 AND (external_id IS NOT NULL)`
  query.
- 
+
 For advanced templating examples, see: https://github.com/danicc097/openapi-go-gin-postgres-sqlc
 
 Features (WIP): see [TODOs](./TODO.md)
@@ -64,7 +64,7 @@ The following is a matrix of the feature support for each database:
 Install `xo` in the usual Go way:
 
 ```sh
-$ go install github.com/danicc097/xo@latest
+$ go install github.com/danicc097/xo/v2@latest
 ```
 
 > **Note:** Go 1.16+ is needed for building `xo` from source.

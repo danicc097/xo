@@ -5,7 +5,7 @@ package ischema
 import (
 	"context"
 
-	"github.com/danicc097/xo/_examples/pgcatalog/pgtypes"
+	"github.com/danicc097/xo/v2/_examples/pgcatalog/pgtypes"
 )
 
 // PgCharOctetLength calls the stored function 'information_schema._pg_char_octet_length(oid, integer) integer' on db.

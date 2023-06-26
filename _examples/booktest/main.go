@@ -14,7 +14,7 @@ import (
 	_ "github.com/lib/pq"
 
 	// models
-	"github.com/danicc097/xo/_examples/booktest/postgres"
+	"github.com/danicc097/xo/v2/_examples/booktest/postgres"
 
 	"github.com/xo/dburl"
 	"github.com/xo/dburl/passfile"

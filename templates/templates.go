@@ -14,8 +14,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/danicc097/xo/internal"
-	xo "github.com/danicc097/xo/types"
+	"github.com/danicc097/xo/v2/internal"
+	xo "github.com/danicc097/xo/v2/types"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
 )

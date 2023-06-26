@@ -7,8 +7,8 @@ import (
 
 // Symbols are extracted (generated) symbols from the types package.
 //
-//go:generate yaegi extract github.com/danicc097/xo/loader
-//go:generate yaegi extract github.com/danicc097/xo/types
+//go:generate yaegi extract github.com/danicc097/xo/v2/loader
+//go:generate yaegi extract github.com/danicc097/xo/v2/types
 //go:generate yaegi extract os/exec
 //go:generate yaegi extract github.com/gobwas/glob
 //go:generate yaegi extract github.com/goccy/go-yaml

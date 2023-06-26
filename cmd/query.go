@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/danicc097/xo/loader"
-	xo "github.com/danicc097/xo/types"
+	"github.com/danicc097/xo/v2/loader"
+	xo "github.com/danicc097/xo/v2/types"
 )
 
 // LoadQuery loads a query.

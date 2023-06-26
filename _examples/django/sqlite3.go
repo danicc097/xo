@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	models "github.com/danicc097/xo/_examples/django/sqlite3"
+	models "github.com/danicc097/xo/v2/_examples/django/sqlite3"
 )
 
 func runSqlite3(ctx context.Context, db *sql.DB) error {

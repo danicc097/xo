@@ -17,8 +17,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/danicc097/xo/loader"
-	xo "github.com/danicc097/xo/types"
+	"github.com/danicc097/xo/v2/loader"
+	xo "github.com/danicc097/xo/v2/types"
 	"github.com/kenshaw/inflector"
 	"github.com/kenshaw/snaker"
 	"golang.org/x/tools/imports"

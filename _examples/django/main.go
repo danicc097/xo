@@ -15,8 +15,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	// models
-	"github.com/danicc097/xo/_examples/django/postgres"
-	"github.com/danicc097/xo/_examples/django/sqlite3"
+	"github.com/danicc097/xo/v2/_examples/django/postgres"
+	"github.com/danicc097/xo/v2/_examples/django/sqlite3"
 
 	"github.com/xo/dburl"
 	"github.com/xo/dburl/passfile"
