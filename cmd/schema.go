@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/danicc097/xo/v2/loader"
-	"github.com/danicc097/xo/v2/models"
-	xo "github.com/danicc097/xo/v2/types"
+	"github.com/danicc097/xo/v3/loader"
+	"github.com/danicc097/xo/v3/models"
+	xo "github.com/danicc097/xo/v3/types"
 	"github.com/kenshaw/inflector"
 	"golang.org/x/exp/slices"
 )

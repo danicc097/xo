@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	models "github.com/danicc097/xo/v2/_examples/northwind/postgres"
+	models "github.com/danicc097/xo/v3/_examples/northwind/postgres"
 )
 
 func runPostgres(ctx context.Context, db *sql.DB) error {

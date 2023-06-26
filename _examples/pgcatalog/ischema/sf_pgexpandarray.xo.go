@@ -5,7 +5,7 @@ package ischema
 import (
 	"context"
 
-	"github.com/danicc097/xo/v2/_examples/pgcatalog/pgtypes"
+	"github.com/danicc097/xo/v3/_examples/pgcatalog/pgtypes"
 )
 
 // PgExpandarray calls the stored function 'information_schema._pg_expandarray(anyarray) (anyelement, integer)' on db.

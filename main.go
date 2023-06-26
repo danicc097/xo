@@ -13,7 +13,7 @@ import (
 	// drivers
 	_ "github.com/lib/pq"
 
-	"github.com/danicc097/xo/v2/cmd"
+	"github.com/danicc097/xo/v3/cmd"
 )
 
 // version is the app version.

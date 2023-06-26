@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/template"
 
-	xo "github.com/danicc097/xo/v2/types"
+	xo "github.com/danicc097/xo/v3/types"
 	"github.com/kenshaw/snaker"
 )
 

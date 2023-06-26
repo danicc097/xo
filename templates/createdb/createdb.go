@@ -16,7 +16,7 @@ import (
 	"text/template"
 	"unicode"
 
-	xo "github.com/danicc097/xo/v2/types"
+	xo "github.com/danicc097/xo/v3/types"
 )
 
 // Init registers the template.

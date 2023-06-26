@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/danicc097/xo/v2/_examples/pgcatalog/pgtypes"
+	"github.com/danicc097/xo/v3/_examples/pgcatalog/pgtypes"
 
 	"github.com/google/uuid"
 )
