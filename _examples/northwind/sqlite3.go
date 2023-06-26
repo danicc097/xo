@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	models "github.com/danicc097/xo/v3/_examples/northwind/sqlite3"
+	models "github.com/danicc097/xo/v5/_examples/northwind/sqlite3"
 )
 
 func runSqlite3(ctx context.Context, db *sql.DB) error {

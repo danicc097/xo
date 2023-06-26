@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	xo "github.com/danicc097/xo/v3/types"
+	xo "github.com/danicc097/xo/v5/types"
 )
 
 // Init registers the template.

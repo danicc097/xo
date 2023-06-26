@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	models "github.com/danicc097/xo/v3/_examples/booktest/postgres"
+	models "github.com/danicc097/xo/v5/_examples/booktest/postgres"
 	"github.com/lib/pq"
 )
 

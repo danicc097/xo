@@ -5,7 +5,7 @@ package ischema
 import (
 	"context"
 
-	"github.com/danicc097/xo/v3/_examples/pgcatalog/pgtypes"
+	"github.com/danicc097/xo/v5/_examples/pgcatalog/pgtypes"
 )
 
 // PgIndexPosition calls the stored function 'information_schema._pg_index_position(oid, smallint) integer' on db.

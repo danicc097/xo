@@ -1,4 +1,4 @@
-module github.com/danicc097/xo/v3
+module github.com/danicc097/xo/v5
 
 go 1.19
 

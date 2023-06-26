@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/danicc097/xo/v3/models"
-	xo "github.com/danicc097/xo/v3/types"
+	"github.com/danicc097/xo/v5/models"
+	xo "github.com/danicc097/xo/v5/types"
 	"github.com/kenshaw/snaker"
 )
 
