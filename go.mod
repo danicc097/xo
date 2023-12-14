@@ -1,6 +1,6 @@
 module github.com/danicc097/xo/v5
 
-go 1.19
+go 1.20
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2

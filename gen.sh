@@ -207,7 +207,7 @@ SELECT DISTINCT
 FROM pg_attribute a
   JOIN ONLY pg_class c ON c.oid = a.attrelid
   JOIN ONLY pg_namespace n ON n.oid = c.relnamespace
-  INNER JOIN information_schema.columns as isc on c.relname = isc.table_name and isc.column_name = a.attname
+  INNER JOIN information_schema.columns as isc on c.relname = isc.table_name and isc.column_name = a.attname and isc.table_schema = %%schema string%%
   LEFT JOIN pg_constraint ct ON ct.conrelid = c.oid
     AND a.attnum = ANY(ct.conkey)
     AND ct.contype = 'p'
