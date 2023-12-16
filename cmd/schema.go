@@ -69,7 +69,6 @@ func LoadEnums(ctx context.Context, args *Args) ([]xo.Enum, error) {
 			Schema:  enum.Schema,
 			EnumPkg: args.SchemaParams.MainSchemaPkg.AsString(),
 		}
-		fmt.Printf("e: %+v\n", e)
 		if err := LoadEnumValues(ctx, args, e); err != nil {
 			return nil, err
 		}
@@ -291,13 +290,8 @@ func LoadColumns(ctx context.Context, args *Args, table *xo.Table, enums []xo.En
 		if defaultValue == "NULL" || sqMap[c.ColumnName] {
 			defaultValue = ""
 		}
-		// now includes enums from all schemas with correct schema...
-		fmt.Printf("enums: %+v\n", enums)
-		// check if column is of any known enum type from public + current schema
-		if idx := slices.IndexFunc(enums, func(e xo.Enum) bool { return e.Name == c.DataType && e.Schema == args.LoaderParams.Schema }); idx != -1 {
-			fmt.Printf("c.DataType: %v\n", c.DataType)
+		if idx := slices.IndexFunc(enums, func(e xo.Enum) bool { return c.DataType == e.Name || c.DataType == e.Schema+"."+e.Name }); idx != -1 {
 			d.Enum = &enums[idx]
-			fmt.Printf("%s d.Enum: %+v\n", table.Name+"."+c.ColumnName, d.Enum)
 		}
 		dateTimeTypes := []string{"date", "timestamp with time zone", "time with time zone", "time without time zone", "timestamp without time zone"}
 
