@@ -8,14 +8,15 @@ import (
 
 // Constraint represents all constraints in a schema.
 type Constraint struct {
-	KeyType       string `json:"key_type"`        // key_type
-	UniqueKeyName string `json:"unique_key_name"` // unique_key_name
-	TableName     string `json:"table_name"`      // table_name
-	ColumnName    string `json:"column_name"`     // column_name
-	TableComment  string `json:"table_comment"`   // table_comment
-	ColumnComment string `json:"column_comment"`  // column_comment
-	RefTableName  string `json:"ref_table_name"`  // ref_table_name
-	RefColumnName string `json:"ref_column_name"` // ref_column_name
+	KeyType          string `json:"key_type"`           // key_type
+	UniqueKeyName    string `json:"unique_key_name"`    // unique_key_name
+	TableName        string `json:"table_name"`         // table_name
+	ColumnName       string `json:"column_name"`        // column_name
+	TableComment     string `json:"table_comment"`      // table_comment
+	ColumnComment    string `json:"column_comment"`     // column_comment
+	RefColumnComment string `json:"ref_column_comment"` // ref_column_comment
+	RefTableName     string `json:"ref_table_name"`     // ref_table_name
+	RefColumnName    string `json:"ref_column_name"`    // ref_column_name
 }
 
 // PostgresConstraints runs a custom query, returning results as Constraint.
@@ -33,6 +34,7 @@ func PostgresConstraints(ctx context.Context, db DB, schema string) ([]*Constrai
 		`kcu.column_name, ` + // ::varchar AS column_name
 		`COALESCE(obj_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, 'pg_class'), '') as table_comment, ` +
 		`COALESCE(col_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, c.ordinal_position), '') as column_comment, ` +
+		`COALESCE(col_description(format('%s.%s',ccu.table_schema,ccu.table_name)::regclass::oid, c.ordinal_position), '') as ref_column_comment, ` +
 		`ccu.table_name, ` + // ::varchar AS ref_table_name
 		`ccu.column_name ` + // ::varchar AS ref_column_name
 		`FROM information_schema.table_constraints tc ` +
@@ -77,7 +79,7 @@ func PostgresConstraints(ctx context.Context, db DB, schema string) ([]*Constrai
 	for rows.Next() {
 		var c Constraint
 		// scan
-		if err := rows.Scan(&c.KeyType, &c.UniqueKeyName, &c.TableName, &c.ColumnName, &c.TableComment, &c.ColumnComment, &c.RefTableName, &c.RefColumnName); err != nil {
+		if err := rows.Scan(&c.KeyType, &c.UniqueKeyName, &c.TableName, &c.ColumnName, &c.TableComment, &c.ColumnComment, &c.RefColumnComment, &c.RefTableName, &c.RefColumnName); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &c)

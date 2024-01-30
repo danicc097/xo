@@ -190,13 +190,14 @@ func LoadConstraints(ctx context.Context, args *Args) ([]xo.Constraint, error) {
 	var constraints []xo.Constraint
 	for _, lc := range lcc {
 		c := xo.Constraint{
-			Type:          lc.KeyType,
-			Name:          lc.UniqueKeyName,
-			TableName:     lc.TableName,
-			RefTableName:  lc.RefTableName,
-			ColumnName:    lc.ColumnName,
-			RefColumnName: lc.RefColumnName,
-			Comment:       lc.ColumnComment,
+			Type:             lc.KeyType,
+			Name:             lc.UniqueKeyName,
+			TableName:        lc.TableName,
+			RefTableName:     lc.RefTableName,
+			ColumnName:       lc.ColumnName,
+			RefColumnName:    lc.RefColumnName,
+			ColumnComment:    lc.ColumnComment,
+			RefColumnComment: lc.RefColumnComment,
 		}
 		constraints = append(constraints, c)
 	}
