@@ -98,8 +98,10 @@ type Constraint struct {
 	Type string `json:"key_type"`
 	// Key name
 	Name             string `json:"name,omitempty"`
+	TableSchema      string `json:"table_schema"`
 	TableName        string `json:"table_name"`
 	ColumnName       string `json:"column_name"`
+	RefTableSchema   string `json:"ref_table_schema"`
 	RefTableName     string `json:"ref_table_name"`
 	RefColumnName    string `json:"ref_column_name"`
 	ColumnComment    string `json:"column_comment"`

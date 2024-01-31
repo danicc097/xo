@@ -260,10 +260,12 @@ SELECT
   END)::varchar AS key_type,
   tc.constraint_name::varchar AS unique_key_name,
   tc.table_name as table_name,
+  tc.table_schema as table_schema,
   kcu.column_name::varchar AS column_name,
   COALESCE(obj_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, 'pg_class'), '') as table_comment,
   COALESCE(col_description(format('%s.%s',c.table_schema,c.table_name)::regclass::oid, c.ordinal_position::int), '') as column_comment,
   COALESCE(col_description(format('%s.%s',ccu.table_schema,ccu.table_name)::regclass::oid, ccu.ordinal_position::int), '') as ref_column_comment,
+  ccu.table_schema::varchar AS ref_table_schema,
   ccu.table_name::varchar AS ref_table_name,
   ccu.column_name::varchar AS ref_column_name
 FROM information_schema.table_constraints tc
