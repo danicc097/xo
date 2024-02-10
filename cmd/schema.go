@@ -33,6 +33,18 @@ func LoadSchema(ctx context.Context, set *xo.Set, args *Args) error {
 	if schema.Procs, err = LoadProcs(ctx, args); err != nil {
 		return err
 	}
+	for _, s := range args.SchemaParams.Schemas.AsStringSlice() {
+		ctxWithSchema := context.WithValue(ctx, xo.SchemaKey, s)
+		schemaEnums, err := LoadEnums(ctxWithSchema, args)
+		if err != nil {
+			return err
+		}
+		schemaTables, err := LoadTables(ctxWithSchema, args, "table", schemaEnums)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("schemaTables (schema=%s): %+v\n", s, len(schemaTables))
+	}
 	if schema.Tables, err = LoadTables(ctx, args, "table", schema.Enums); err != nil {
 		return err
 	}
@@ -426,7 +438,8 @@ func LoadTableForeignKeys(ctx context.Context, args *Args, tables []xo.Table, ta
 		// check foreign key
 		field, refTable, refField := xo.Field{}, xo.Table{}, xo.Field{}
 		if err := checkFk(tables, table, fkey, &field, &refTable, &refField); err != nil {
-			return nil, err
+			fmt.Printf("ignoring FK from different schema: NOT IMPLEMENTED\n")
+			continue
 		}
 		// ForeignKeyName should only be empty on SQLite. When this happens, we
 		// resort to using the keyid (which is unique to each foreign key, even

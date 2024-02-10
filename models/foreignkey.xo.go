@@ -11,7 +11,9 @@ type ForeignKey struct {
 	ForeignKeyName string `json:"foreign_key_name"` // foreign_key_name
 	TableName      string `json:"table_name"`       // table_name
 	ColumnName     string `json:"column_name"`      // column_name
+	TableSchema    string `json:"table_schema"`     // table_schema
 	RefTableName   string `json:"ref_table_name"`   // ref_table_name
+	RefTableSchema string `json:"ref_table_schema"` // ref_table_schema
 	RefColumnName  string `json:"ref_column_name"`  // ref_column_name
 	KeyID          int    `json:"key_id"`           // key_id
 }
@@ -19,11 +21,13 @@ type ForeignKey struct {
 // PostgresTableForeignKeys runs a custom query, returning results as ForeignKey.
 func PostgresTableForeignKeys(ctx context.Context, db DB, schema, table string) ([]*ForeignKey, error) {
 	// query
-	const sqlstr = `SELECT ` +
+	const sqlstr = `select distinct ` +
 		`tc.constraint_name, ` + // ::varchar AS foreign_key_name
 		`tc.table_name as table_name, ` +
 		`kcu.column_name, ` + // ::varchar AS column_name
+		`kcu.table_schema , ` + // ::varchar AS table_schema
 		`ccu.table_name, ` + // ::varchar AS ref_table_name
+		`ccu.table_schema , ` + // ::varchar AS ref_table_schema
 		`ccu.column_name, ` + // ::varchar AS ref_column_name
 		`0 ` + // ::integer AS key_id
 		`FROM information_schema.table_constraints tc ` +
@@ -52,7 +56,6 @@ func PostgresTableForeignKeys(ctx context.Context, db DB, schema, table string) 
 		`FROM information_schema.constraint_column_usage ` +
 		`) t ` +
 		`) AS ccu ON ccu.constraint_name = tc.constraint_name ` +
-		`AND ccu.table_schema = tc.table_schema ` +
 		`AND ccu.ordinal_position = kcu.ordinal_position ` +
 		`WHERE tc.constraint_type = 'FOREIGN KEY' ` +
 		`AND tc.table_schema = $1 ` +
@@ -69,7 +72,7 @@ func PostgresTableForeignKeys(ctx context.Context, db DB, schema, table string) 
 	for rows.Next() {
 		var fk ForeignKey
 		// scan
-		if err := rows.Scan(&fk.ForeignKeyName, &fk.TableName, &fk.ColumnName, &fk.RefTableName, &fk.RefColumnName, &fk.KeyID); err != nil {
+		if err := rows.Scan(&fk.ForeignKeyName, &fk.TableName, &fk.ColumnName, &fk.TableSchema, &fk.RefTableName, &fk.RefTableSchema, &fk.RefColumnName, &fk.KeyID); err != nil {
 			return nil, logerror(err)
 		}
 		res = append(res, &fk)

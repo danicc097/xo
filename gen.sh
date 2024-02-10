@@ -13,7 +13,7 @@ set -a
 source .env
 set +a
 
-docker-compose up -d --build
+docker compose up -d --build
 
 PGDB="pg://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB?sslmode=disable"
 
@@ -295,7 +295,6 @@ FROM information_schema.table_constraints tc
       FROM information_schema.constraint_column_usage
     ) t
   ) AS ccu ON ccu.constraint_name = tc.constraint_name
-    AND ccu.table_schema = tc.table_schema
     AND ccu.ordinal_position = kcu.ordinal_position
 WHERE tc.table_schema = %%schema string%%
 ENDSQL
@@ -412,11 +411,13 @@ ENDSQL
 # postgres table foreign key list query
 COMMENT='{{ . }} is a foreign key.'
 $XOBIN query "$PGDB" -M -B -2 -T ForeignKey -F PostgresTableForeignKeys --type-comment "$COMMENT" -o "$DEST" "$@" <<ENDSQL
-SELECT
+select distinct
   tc.constraint_name::varchar AS foreign_key_name,
   tc.table_name as table_name,
   kcu.column_name::varchar AS column_name,
+  kcu.table_schema ::varchar AS table_schema,
   ccu.table_name::varchar AS ref_table_name,
+  ccu.table_schema ::varchar AS ref_table_schema,
   ccu.column_name::varchar AS ref_column_name,
   0::integer AS key_id
 FROM information_schema.table_constraints tc
@@ -445,7 +446,6 @@ FROM information_schema.table_constraints tc
       FROM information_schema.constraint_column_usage
     ) t
   ) AS ccu ON ccu.constraint_name = tc.constraint_name
-    AND ccu.table_schema = tc.table_schema
     AND ccu.ordinal_position = kcu.ordinal_position
 WHERE tc.constraint_type = 'FOREIGN KEY'
   AND tc.table_schema = %%schema string%%

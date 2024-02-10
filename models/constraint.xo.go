@@ -68,7 +68,6 @@ func PostgresConstraints(ctx context.Context, db DB, schema string) ([]*Constrai
 		`FROM information_schema.constraint_column_usage ` +
 		`) t ` +
 		`) AS ccu ON ccu.constraint_name = tc.constraint_name ` +
-		`AND ccu.table_schema = tc.table_schema ` +
 		`AND ccu.ordinal_position = kcu.ordinal_position ` +
 		`WHERE tc.table_schema = $1`
 	// run

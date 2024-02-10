@@ -56,6 +56,7 @@ func NewArgs(name string, names ...string) *Args {
 			Include:       xo.NewValue("glob", "", "include columns"),
 			Exclude:       xo.NewValue("glob", "", "exclude columns"),
 			Ignore:        xo.NewValue("glob", "", "ignore columns for inserts/updates"),
+			Schemas:       xo.NewValue("[]string", "", "schemas required to resolve FKs"),
 			MainSchemaPkg: xo.NewValue("string", "", "Go package name containing the schema generation code for shared enums."),
 		},
 	}
@@ -140,6 +141,8 @@ type SchemaParams struct {
 	Ignore *xo.Value
 	// MainSchemaPkg determines the package used for enums, etc. if any.
 	MainSchemaPkg *xo.Value
+	// Schemas are required schemas for FK resolution.
+	Schemas *xo.Value
 }
 
 // OutParams are out parameters.
@@ -283,6 +286,7 @@ func SchemaCommand(ctx context.Context, ts *templates.Set, args *Args) (*cobra.C
 	flags.VarP(args.SchemaParams.Include, "include", "i", args.SchemaParams.Include.Desc())
 	flags.VarP(args.SchemaParams.Exclude, "exclude", "e", args.SchemaParams.Exclude.Desc())
 	flags.VarP(args.SchemaParams.Ignore, "ignore", "I", args.SchemaParams.Ignore.Desc())
+	flags.VarP(args.SchemaParams.Schemas, "schemas", "", args.SchemaParams.Schemas.Desc())
 	flags.BoolVarP(&args.SchemaParams.UseIndexNames, "use-index-names", "j", false, "use index names as defined in schema for generated code")
 	if err := templateFlags(cmd, ts, true, args); err != nil {
 		return nil, err
